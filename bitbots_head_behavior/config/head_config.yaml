@@ -18,6 +18,17 @@ behavior:
       - [30, -7]
       - [-30, -7]
 
+     # Search pattern in degrees, [pan, tilt]
+    search_pattern_goal_with_ball:
+      - [0, -65]
+      - [-63, 0]
+      - [0, -65]
+      - [-30, 0]
+      - [0, -65]
+      - [30, 0]
+      - [0, -65]
+      - [63, 0]
+
     # These values describe the minimal required delta between current joint states and target joint states in degrees
     # to reduce unnecessary movement due to noise in the detection of the BallRelative.
     ball_tracking_min_pan_delta: 8

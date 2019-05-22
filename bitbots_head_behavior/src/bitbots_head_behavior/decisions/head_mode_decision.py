@@ -34,6 +34,8 @@ class HeadModeDecision(AbstractDecisionElement):
             return 'BALL_MODE'
         elif head_mode == HeadMode.POST_MODE:
             return 'POST_MODE'
+        elif head_mode == HeadMode.SEARCH_GOAL_WITH_BALL_MODE:
+            return 'SEARCH_GOAL_WITH_BALL_MODE'
         elif head_mode == HeadMode.BALL_GOAL_TRACKING:
             return 'BALL_GOAL_TRACKING'
         elif head_mode == HeadMode.FIELD_FEATURES:

@@ -16,12 +16,19 @@ $BallKickArea
     RIGHT --> @Stop, @KickBall + foot:right
     FAR --> @GoToBall + target:none
 
+#SearchGoalWithBall
+$InGoalSearchTime
+    YES --> @SearchGoalWithBall, $GoalSeen
+        YES --> #GoAndKickBallDetectionGoal
+        NO --> @Stand
+    NO --> #GoAndKickBallAway
+
 #NoLocalizationPlayerBehavior
 $BallSeen
     YES --> $BallClose
         YES --> $GoalSeen
             YES --> #GoAndKickBallDetectionGoal
-            NO --> @GoToBall + target:none, @SearchGoal
+            NO --> #SearchGoalWithBall //@GoToBall + target:none, @SearchGoal
         NO --> @GoToBall + target:none
     NO --> @SearchBall
 
