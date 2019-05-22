@@ -67,5 +67,8 @@ behavior:
     # the radius is the margin around the goal to both y and the positive x directions
     ball_dangerous_goal_radius: 2
 
+    # player will search for a goal for specified time
+    goal_search_duration: 15
+
 
 role: "offense"
