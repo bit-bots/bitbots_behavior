@@ -18,9 +18,9 @@ $BallKickArea
 
 #SearchGoalWithBall
 $InGoalSearchTime
-    YES --> @SearchGoalWithBall, $GoalSeen
+    YES --> $GoalSeen
         YES --> #GoAndKickBallDetectionGoal
-        NO --> @Stand
+        NO --> @SearchGoalWithBall
     NO --> #GoAndKickBallAway
 
 #NoLocalizationPlayerBehavior
@@ -28,7 +28,7 @@ $BallSeen
     YES --> $BallClose
         YES --> $GoalSeen
             YES --> #GoAndKickBallDetectionGoal
-            NO --> #SearchGoalWithBall //@GoToBall + target:none, @SearchGoal
+            NO --> #SearchGoalWithBall
         NO --> @GoToBall + target:none
     NO --> @SearchBall
 
