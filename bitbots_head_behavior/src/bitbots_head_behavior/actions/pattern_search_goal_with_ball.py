@@ -25,6 +25,8 @@ class PatternSearchGoalWithBall(AbstractActionElement):
         """
         head_pan, head_tilt = self.pattern[int(self.index)]
 
+        print("V-shaped search pattern should be executed")
+
         # Convert to radians
         head_pan = head_pan / 180.0 * math.pi
         head_tilt = head_tilt / 180.0 * math.pi

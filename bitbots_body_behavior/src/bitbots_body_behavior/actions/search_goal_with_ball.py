@@ -8,4 +8,4 @@ class SearchGoalWithBall(AbstractActionElement):
 
     def perform(self, reevaluate=False):
         self.blackboard.blackboard.set_head_duty(HeadMode.SEARCH_GOAL_WITH_BALL_MODE)
-        # TODO search goal with ball in head behaviour
+        print("search goal with ball")

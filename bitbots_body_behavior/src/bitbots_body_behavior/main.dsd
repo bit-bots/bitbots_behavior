@@ -23,6 +23,7 @@ $InGoalSearchTime
         NO --> @SearchGoalWithBall
     NO --> #GoAndKickBallAway
 
+
 #NoLocalizationPlayerBehavior
 $BallSeen
     YES --> $BallClose

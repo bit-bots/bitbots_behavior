@@ -12,6 +12,7 @@ class InGoalSearchTime(AbstractDecisionElement):
     def perform(self, reevaluate=False):
         if rospy.get_time() - self.start_searching_time < self.outrun_goal_search_time:
             return 'YES'
+        print("not in goal search time")
         return 'NO'
 
     def get_reevaluate(self):
