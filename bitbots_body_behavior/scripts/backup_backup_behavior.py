@@ -31,7 +31,7 @@ class Behavior(object):
         self.ball_position = (100,100)
         self.ball_distance = 100
         self.ball_angle = 0.0
-        self.ball_age = 100 
+        self.ball_age = 100
         self.goal_angle = 1.0
         self.end_not_allowed_to_move = False
         self.goal_in_front = False
@@ -42,7 +42,7 @@ class Behavior(object):
         self.kick_behavior = True
         # Turn torwards the goal
         self.goal_behavior = True
-        
+
         rospy.init_node('backup_backup_behavior')
 
         self.tf_buffer = tf2.Buffer(cache_time=rospy.Duration(5))
@@ -50,21 +50,21 @@ class Behavior(object):
 
         self.anim = Anim()
 
-        # Subscribe to 'ball_relative'-message
+        # Subscribe to 'balls_relative'-message
         self.ball_relative_msg = rospy.Subscriber(
-            'ball_relative',
+            'balls_relative',
             BallRelative,
             self.ball_relative_cb,
             queue_size=1,
             tcp_nodelay=True)
-        
+
         self.goal_relative_msg = rospy.Subscriber(
             'goal_relative',
             GoalRelative,
             self.goal_relative_cb,
             queue_size=1,
             tcp_nodelay=True)
-        
+
         self.game_control_msg = rospy.Subscriber(
             'gamestate',
             GameState,
@@ -120,8 +120,8 @@ class Behavior(object):
             # Inform the behavior about the state change
             self.end_not_allowed_to_move = True
         # Set if we are allowed to move
-        self.allow_to_move = msg.allowedToMove 
-    
+        self.allow_to_move = msg.allowedToMove
+
     def goal_relative_cb(self, msg):
         # Get goal relative to base footprint
         goal_obj = PointStamped(msg.header, msg.center_direction)
@@ -173,7 +173,7 @@ class Behavior(object):
         time.sleep(walk_time)
         self.walkingWalkSteeredForward(0, 0, recurr=False)
         time.sleep(1)
-    
+
     def goToBall(self):
         # Walk torward the ball til its 0.5 meters in front of us
         while self.ball_distance > 0.5 and not rospy.is_shutdown():
@@ -297,7 +297,7 @@ class Behavior(object):
         walking_message.angular.z = rotation
         walking_message.linear.y = speed
         self.pub_walking.publish(walking_message)
-    
+
     def kick(self):
         # Kick the ball
         # Walk the last bit torwards the ball
@@ -336,7 +336,7 @@ class Behavior(object):
         self.walkingWalkSteeredForward(0.0, 0.0)
         # Chill
         time.sleep(1)
-    
+
 class Anim(object):
     def __init__(self):
         pass

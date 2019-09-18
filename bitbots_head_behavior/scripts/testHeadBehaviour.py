@@ -7,7 +7,7 @@ from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 
 def run():
-    pub_ball = rospy.Publisher("ball_in_image", BallsInImage, queue_size=1)
+    pub_ball = rospy.Publisher("balls_in_image", BallsInImage, queue_size=1)
     pub_hmg = rospy.Publisher("head_motor_goals", JointTrajectory, queue_size=1)
 
     hmg = JointTrajectory()
@@ -19,7 +19,7 @@ def run():
 
     counter = 320
     direction = 1
-        
+
     rospy.loginfo("Create Test")
     rospy.init_node("bitbots_testHeadBehaviour")
     pub_hmg.publish(hmg)

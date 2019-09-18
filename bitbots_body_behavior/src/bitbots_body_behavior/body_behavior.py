@@ -37,7 +37,7 @@ if __name__ == "__main__":
 
 
     # TODO: callbacks away from the blackboard!
-    rospy.Subscriber("ball_relative", BallRelative, D.blackboard.world_model.ball_callback)
+    rospy.Subscriber("balls_relative", BallRelative, D.blackboard.world_model.ball_callback)
     rospy.Subscriber("goal_relative", GoalRelative, D.blackboard.world_model.goal_callback)
     rospy.Subscriber("gamestate", GameState, D.blackboard.gamestate.gamestate_callback)
     rospy.Subscriber("team_data", TeamData, D.blackboard.team_data.team_data_callback)
