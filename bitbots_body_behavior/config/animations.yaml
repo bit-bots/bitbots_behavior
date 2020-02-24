@@ -25,3 +25,5 @@ Animations:
     # Penalty kicks to the front, with left/right leg
     frontLeftKick: ""
     frontRightKick: ""
+
+  cheering: "cheering"

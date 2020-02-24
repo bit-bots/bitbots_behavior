@@ -16,6 +16,7 @@ class GameStatusCapsule:
         self.gamestate = GameState()
         self.last_update = 0
         self.unpenalized_since = 0
+        self.goal_update = False
 
     def is_game_state_equals(self, value):
         assert value in [GameState.GAMESTATE_PLAYING, GameState.GAMESTATE_FINISHED, GameState.GAMESTATE_INITAL,
@@ -69,6 +70,9 @@ class GameStatusCapsule:
         if self.gamestate.penalized and not gs.penalized:
             print("update")
             self.unpenalized_since = rospy.get_time()
+
+        if self.gamestate.ownScore < gs.ownScore:
+            self.goal_update = True
 
         self.last_update = rospy.get_time()
         self.gamestate = gs

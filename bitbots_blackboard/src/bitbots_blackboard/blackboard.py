@@ -19,6 +19,7 @@ class BodyBlackboard:
         self.goal_width = 2.6
 
         self.config = rospy.get_param("behavior/body")
+        self.animations = rospy.get_param("Animations")
         self.blackboard = BlackboardCapsule()
         self.gamestate = GameStatusCapsule()
         self.animation = AnimationCapsule()
