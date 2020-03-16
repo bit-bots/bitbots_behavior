@@ -56,7 +56,17 @@ class WorldModelCapsule:
         return self.ball
 
     def get_ball_position_uv(self):
-        return self.ball.point.x, self.ball.point.y
+        if  # TODO localization precise enough
+            if self.ball.header.frame_id != 'base_footprint':
+                try:
+                    ball = self.tf_buffer.transform(self.ball, 'base_footprint', timeout=rospy.Duration(0.3))
+                except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+                    rospy.logwarn(e)
+            else:
+                ball = self.ball
+        else:  # TODO use odom?
+
+        return ball.point.x, ball.point.y
 
     def get_ball_distance(self):
         u, v = self.get_ball_position_uv()
@@ -73,9 +83,9 @@ class WorldModelCapsule:
         # adding a minor delay to timestamp to ease transformations.
         ball.header.stamp = ball.header.stamp + rospy.Duration.from_sec(0.01)
         ball_buffer = PointStamped(ball.header, ball.ball_relative)
-        if ball.header.frame_id != 'base_footprint':
+        if ball.header.frame_id != 'map':
             try:
-                self.ball = self.tf_buffer.transform(ball_buffer, 'base_footprint', timeout=rospy.Duration(0.3))
+                self.ball = self.tf_buffer.transform(ball_buffer, 'map', timeout=rospy.Duration(0.3))
                 self.ball_seen_time = rospy.Time.now()
                 self.ball_seen = True
 
