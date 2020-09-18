@@ -20,6 +20,7 @@
 
     <buildtool_depend>catkin</buildtool_depend>
 
+    <depend>bitbots_docs</depend>
     <depend>rospy</depend>
 
     <exec_depend>tf2</exec_depend>

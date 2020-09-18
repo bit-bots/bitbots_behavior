@@ -17,6 +17,7 @@
   <buildtool_depend>catkin</buildtool_depend>
   
   <depend>rospy</depend>
+  <depend>bitbots_docs</depend>
 
   <exec_depend>humanoid_league_msgs</exec_depend>
   <exec_depend>dynamic_stack_decider</exec_depend>

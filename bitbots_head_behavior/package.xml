@@ -15,6 +15,7 @@
 
   <exec_depend>rospy</exec_depend>
 
+  <depend>bitbots_docs</depend>
   <depend>std_msgs</depend>
   <exec_depend>humanoid_league_msgs</exec_depend>
   <exec_depend>dynamic_stack_decider</exec_depend>

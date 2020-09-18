@@ -3,6 +3,9 @@ project(bitbots_blackboard)
 
 find_package(catkin REQUIRED COMPONENTS rospy)
 
+find_package(catkin COMPONENTS bitbots_docs)
+enable_bitbots_docs()
+
 catkin_python_setup()
 
 catkin_package()
