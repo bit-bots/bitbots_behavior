@@ -10,12 +10,13 @@ class SearchBall(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(SearchBall, self).__init__(blackboard, dsd, parameters)
         self.time_last_turn = rospy.Time.now()
+        self.ball_lost_duration = rospy.Duration(parameters['ball_lost_time'])
 
     def perform(self, reevaluate=False):
-        # TODO make parameter value
         if self.time_last_turn < self.blackboard.world_model.ball_last_seen():
             self.time_last_turn = rospy.Time.now()
-        if rospy.Time.now() - self.time_last_turn > rospy.Duration(20):
+        if rospy.Time.now() - self.time_last_turn > self.ball_lost_duration:
+            # TODO: What to do, after the robot tried to stand up for more than ball_lost_time? I noticed, that this got triggered while standing up. I suppose, we should stand still for a moment and search before turning around.
             # remember that we turned around
             self.time_last_turn = rospy.Time.now()
 

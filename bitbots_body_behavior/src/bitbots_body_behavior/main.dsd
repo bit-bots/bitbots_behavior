@@ -27,7 +27,7 @@ $BallSeen
             YES --> #GoAndKickBallDetectionGoal
             NO --> #GoAndKickBallAway
         NO --> @GoToBall + target:close
-    NO --> @Stop, @LookAtBall, @SearchBall
+    NO --> @Stop, @LookAtBall, @SearchBall + ball_lost_time:%behavior/body/ball_lost_time
 
 #NoLocalizationGoalieBehavior
 $BallSeen
@@ -83,7 +83,7 @@ $LocalizationAvailable
                 YES --> #Positioning
                 NO --> $BallSeen
                     YES --> #GoAndKickBallMapGoal
-                    NO --> @Stop, @LookAtFieldFeatures, @SearchBall
+                    NO --> @Stop, @LookAtFieldFeatures, @SearchBall + ball_lost_time:%behavior/body/ball_lost_time
         LOW --> $TimerEnded + name:reorientation_pause
             NO --> #NoLocalizationOffenseBehavior
             YES --> $TimerRunning + name:reorientation
