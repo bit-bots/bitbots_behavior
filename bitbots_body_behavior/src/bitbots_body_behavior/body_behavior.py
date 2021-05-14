@@ -13,7 +13,7 @@ import os
 import rospy
 from tf2_geometry_msgs import PoseStamped
 from humanoid_league_msgs.msg import GameState, HeadMode, Strategy, TeamData,\
-    RobotControlState, PoseWithCertainty, PoseWithCertaintyArray
+    RobotControlState, PoseWithCertaintyArray, PoseWithCertaintyStamped
 from move_base_msgs.msg import MoveBaseActionFeedback
 from actionlib_msgs.msg import GoalID
 
@@ -40,7 +40,10 @@ if __name__ == "__main__":
 
 
     # TODO: callbacks away from the blackboard!
-    rospy.Subscriber("balls_relative", PoseWithCertaintyArray, D.blackboard.world_model.balls_callback)
+    rospy.Subscriber(
+        rospy.get_param("behavior/body/ball_subscribe_topic"),
+        PoseWithCertaintyStamped,
+        D.blackboard.world_model.filtered_ball_callback)
     rospy.Subscriber("goal_posts_relative", PoseWithCertaintyArray, D.blackboard.world_model.goalposts_callback)
     rospy.Subscriber("gamestate", GameState, D.blackboard.gamestate.gamestate_callback)
     rospy.Subscriber("team_data", TeamData, D.blackboard.team_data.team_data_callback)

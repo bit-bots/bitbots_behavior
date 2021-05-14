@@ -12,7 +12,7 @@ from std_msgs.msg import Header
 from tf2_geometry_msgs import PointStamped
 from geometry_msgs.msg import Point, PoseWithCovarianceStamped, TwistWithCovarianceStamped, TwistStamped
 from tf.transformations import euler_from_quaternion
-from humanoid_league_msgs.msg import PoseWithCertaintyArray, PoseWithCertainty
+from humanoid_league_msgs.msg import PoseWithCertaintyArray, PoseWithCertaintyStamped, PoseWithCertainty
 
 
 class GoalRelative:
@@ -128,31 +128,30 @@ class WorldModelCapsule:
     def get_ball_speed(self):
         raise NotImplementedError
 
-    def balls_callback(self, msg: PoseWithCertaintyArray):
-        if msg.poses:
-            balls = sorted(msg.poses, reverse=True, key=lambda ball: ball.confidence)  # Sort all balls by confidence
-            ball = balls[0]  # Ball with highest confidence
+    def filtered_ball_callback(self, msg: PoseWithCertaintyStamped):
 
-            if ball.confidence == 0:
-                return
-
-            ball_buffer = PointStamped(msg.header, ball.pose.pose.position)
-            try:
-                self.ball = self.tf_buffer.transform(ball_buffer, self.base_footprint_frame, timeout=rospy.Duration(0.3))
-                self.ball_odom = self.tf_buffer.transform(ball_buffer, self.odom_frame, timeout=rospy.Duration(0.3))
-                self.ball_map = self.tf_buffer.transform(ball_buffer, self.map_frame, timeout=rospy.Duration(0.3))
-                # Set timestamps to zero to get the newest transform when this is transformed later
-                self.ball_odom.header.stamp = rospy.Time(0)
-                self.ball_map.header.stamp = rospy.Time(0)
-                self.ball_seen_time = rospy.Time.now()
-                self.ball_seen = True
-
-            except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
-                rospy.logwarn(e)
-
-            self.ball_publisher.publish(self.ball)
-        else:
+        # When the precision is not sufficient, the ball ages. 
+        x_sdev = msg.pose.pose.covariance[0]  # position 0,0 in a 6x6-matrix
+        y_sdev = msg.pose.pose.covariance[7]  # position 1,1 in a 6x6-matrix
+        if x_sdev > self.config['ball_position_precision_threshold']['x_sdev'] or \
+           y_sdev > self.config['ball_position_precision_threshold']['y_sdev']:
             return
+
+        ball_buffer = PointStamped(msg.header, msg.pose.pose.pose.position)
+        try:
+            self.ball = self.tf_buffer.transform(ball_buffer, self.base_footprint_frame, timeout=rospy.Duration(0.3))
+            self.ball_odom = self.tf_buffer.transform(ball_buffer, self.odom_frame, timeout=rospy.Duration(0.3))
+            self.ball_map = self.tf_buffer.transform(ball_buffer, self.map_frame, timeout=rospy.Duration(0.3))
+            # Set timestamps to zero to get the newest transform when this is transformed later
+            self.ball_odom.header.stamp = rospy.Time(0)
+            self.ball_map.header.stamp = rospy.Time(0)
+            self.ball_seen_time = rospy.Time.now()
+
+        except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+            rospy.logwarn(e)
+
+        self.ball_publisher.publish(self.ball)
+        self.ball_seen = True
 
     def recent_ball_twist_available(self):
         if self.ball_twist_map is None:

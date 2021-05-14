@@ -35,7 +35,9 @@ behavior:
 
     # When the ball has not been seen for `ball_lost_time` seconds,
     # it is considered lost and will be searched
-    ball_lost_time: 15
+    # With the ball filter, this means that the ball lost time is the time after which the filter gave a covariance
+    # below the ball position precision threshold
+    ball_lost_time: 2
 
     # The orientation threshold defining which range (in Degrees) is acceptable as aligned to the goal (in each direction)
     goal_alignment_orientation_threshold: 20
@@ -48,6 +50,11 @@ behavior:
     # When the ball is closer than `ball_close_distance` meters
     # it is in a reachable area of the robot
     ball_close_distance: 1.5
+
+    # the maximal allowed standard deviation of the ball position.
+    ball_position_precision_threshold:
+      x_sdev: 1.0
+      y_sdev: 1.0
 
     # the maximal allowed standard deviation of the ball twist.
     ball_twist_precision_threshold:
@@ -124,6 +131,7 @@ behavior:
 
     # topics the behavior subscribes to
     ball_movement_subscribe_topic: 'ball_relative_movement'
+    ball_subscribe_topic: 'ball_relative_filtered'
 
 
 role: "offense"
