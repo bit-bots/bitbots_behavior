@@ -33,6 +33,9 @@ behavior:
       # position number 0 = center, 1 = left, 2 = right
       pos_number: 0
 
+    # Time to wait in ready state before moving to role position to give the localization time to converge.
+    ready_wait_time: 4
+
     # When the ball has not been seen for `ball_lost_time` seconds,
     # it is considered lost and will be searched
     # With the ball filter, this means that the ball lost time is the time after which the filter gave a covariance
@@ -64,21 +67,13 @@ behavior:
     # the duration after which a ball_twist is considered irrelevant.
     ball_twist_lost_time: 2
 
-    # An area in which the ball can be kicked with the right foot
+    # An area in which the ball can be kicked
     # defined by min/max x/y values in meters which represent ball positions relative to base_footprint
     # http://www.ros.org/reps/rep-0103.html#axis-orientation
-    right_kick_min_x: 0
-    right_kick_min_y: -0.15
-    right_kick_max_x: 0.3
-    right_kick_max_y: 0
-
-    # An area in which the ball can be kicked with the left foot
-    # defined by min/max x/y values in meters which represent ball positions relative to base_footprint
-    # http://www.ros.org/reps/rep-0103.html#axis-orientation
-    left_kick_min_x: 0
-    left_kick_min_y: 0
-    left_kick_max_x: 0.3
-    left_kick_max_y: 0.15
+    kick_min_x: 0
+    kick_min_y: -0.20
+    kick_max_x: 0.35
+    kick_max_y: 0.20
 
     # defines the radius around the goal (in form of a box)
     # in this area, the goalie will react to the ball.
@@ -108,9 +103,9 @@ behavior:
 
     # the maximal allowed standard deviation of the localization pose.
     pose_precision_threshold:
-      x_sdev: 0.3
-      y_sdev: 0.3
-      theta_sdev: 0.1
+      x_sdev: 0.5
+      y_sdev: 0.5
+      theta_sdev: 0.6
 
     # maximum amount of time after which a localization pose is dropped.
     # (This should not happen unless the localization has died. RIP in this case.)
@@ -128,6 +123,18 @@ behavior:
 
     # don't aim closer to goalpost than this
     goalpost_safety_distance: 0.1
+
+    # Distance at which the ball is first approached before the ball obstacle is deactivated and we approach closer for the kick
+    ball_far_approach_dist: 0.5
+
+    # Range in which the ball far approach point is counted as reached
+    ball_far_approach_position_thresh: 0.2
+
+    # We reapproach the ball after it has moved further away than this distance. This includes movig to the far approach position. Balls further away are also recognized as obstacles.
+    ball_reaproach_dist: 1.0
+
+    # Distance at which the ball is normally approached
+    ball_approach_dist: 0.2
 
     # topics the behavior subscribes to
     ball_movement_subscribe_topic: 'ball_relative_movement'
