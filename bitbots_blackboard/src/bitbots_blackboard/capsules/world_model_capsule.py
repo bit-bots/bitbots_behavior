@@ -146,12 +146,12 @@ class WorldModelCapsule:
             self.ball_odom.header.stamp = rospy.Time(0)
             self.ball_map.header.stamp = rospy.Time(0)
             self.ball_seen_time = rospy.Time.now()
+            self.ball_publisher.publish(self.ball)
+            self.ball_seen = True
 
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             rospy.logwarn(e)
 
-        self.ball_publisher.publish(self.ball)
-        self.ball_seen = True
 
     def recent_ball_twist_available(self):
         if self.ball_twist_map is None:
