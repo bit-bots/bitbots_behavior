@@ -138,6 +138,11 @@ $SecondaryStateDecider
         READY --> #PositioningReady
         PLAYING --> #GoalieBehavior
         ELSE --> @LookAtFieldFeatures, @StandAndWait
+    NORMAL --> $GameStateDecider
+        INITIAL --> @LookAtFieldFeatures, @StandAndWait
+        READY --> #PositioningReady
+        PLAYING --> #GoalieBehavior
+        ELSE --> @LookAtFieldFeatures, @StandAndWait
     ELSE --> $SecondaryStateModeDecider
         PLACING --> #PositioningReady
         ELSE --> @LookAtFieldFeatures, @StandAndWait
@@ -166,16 +171,15 @@ $SecondaryStateDecider
         READY --> #PositioningReady
         PLAYING --> #OffenseBehavior
         ELSE --> @LookAtFieldFeatures, @StandAndWait
-    PENALTYSHOOT --> #PenaltyBehavior
     OVERTIME --> $GameStateDecider
         INITIAL --> @LookAtFieldFeatures, @StandAndWait
         READY --> #PositioningReady
         PLAYING --> #OffenseBehavior
         ELSE --> @LookAtFieldFeatures, @StandAndWait
+    PENALTYSHOOT --> #PenaltyBehavior
     TIMEOUT -->  @LookAtFieldFeatures, @StandAndWait
     ELSE --> #OffenseSecondaryState
 
-
 #DefenseRole
 $SecondaryStateDecider
     NORMAL --> $GameStateDecider
@@ -183,30 +187,12 @@ $SecondaryStateDecider
         READY --> #PositioningReady
         PLAYING --> #DefenseBehavior
         ELSE --> @LookAtFieldFeatures, @StandAndWait
-    PENALTYSHOOT --> #PenaltyBehavior
     OVERTIME --> $GameStateDecider
         INITIAL --> @LookAtFieldFeatures, @StandAndWait
         READY --> #PositioningReady
         PLAYING --> #DefenseBehavior
         ELSE --> @LookAtFieldFeatures, @StandAndWait
-    TIMEOUT --> @LookAtFieldFeatures, @StandAndWait
-    ELSE --> $SecondaryStateModeDecider
-        PLACING --> @GoToDefensePosition
-        ELSE --> @LookAtFieldFeatures, @StandAndWait
-
-#DefenseRole
-$SecondaryStateDecider
-    NORMAL --> $GameStateDecider
-        INITIAL --> @LookAtFieldFeatures, @StandAndWait
-        READY --> #PositioningReady
-        PLAYING --> #DefenseBehavior
-        ELSE --> @LookAtFieldFeatures, @StandAndWait
     PENALTYSHOOT --> #PenaltyBehavior
-    OVERTIME --> $GameStateDecider
-        INITIAL --> @LookAtFieldFeatures, @StandAndWait
-        READY --> #PositioningReady
-        PLAYING --> #DefenseBehavior
-        ELSE --> @LookAtFieldFeatures, @StandAndWait
     TIMEOUT --> @LookAtFieldFeatures, @StandAndWait
     ELSE --> $SecondaryStateModeDecider
         PLACING --> @GoToDefensePosition
