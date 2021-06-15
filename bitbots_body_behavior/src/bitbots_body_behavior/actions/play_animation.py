@@ -83,10 +83,18 @@ class PlayAnimationGoalieFallRight(AbstractPlayAnimation):
         rospy.loginfo("PLAYING GOALIE FALLING RIGHT ANIMATION")
         return self.blackboard.goalie_falling_right_animation
 
+
 class PlayAnimationGoalieFallLeft(AbstractPlayAnimation):
     def chose_animation(self):
         rospy.loginfo("PLAYING GOALIE FALLING LEFT ANIMATION")
         return self.blackboard.goalie_falling_left_animation
+
+
+class PlayAnimationGoalieFallMiddle(AbstractPlayAnimation):
+    def chose_animation(self):
+        rospy.loginfo("PLAYING GOALIE FALLING MIDDLE ANIMATION")
+        return self.blackboard.goalie_falling_middle_animation
+
 
 class PlayAnimationCheering(AbstractPlayAnimation):
     def chose_animation(self):

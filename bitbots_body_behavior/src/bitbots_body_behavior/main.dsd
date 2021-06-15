@@ -120,6 +120,7 @@ $SecondaryStateTeamDecider
     OTHER --> $BallDangerous
         LEFT --> @Stop, @LookAtBall, @PlayAnimationGoalieFallLeft
         RIGHT --> @Stop, @LookAtBall, @PlayAnimationGoalieFallRight
+        MIDDLE --> @Stop, @LookAtBall, @PlayAnimationGoalieFallMiddle
         ELSE --> @Stop, @LookAtBall
 
 #GoalieRole
