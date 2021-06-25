@@ -19,11 +19,11 @@ class ReachedRolePosition(AbstractDecisionElement):
         if self.blackboard.blackboard.duty == 'goalie':
             goal = np.array(self.role_positions[self.blackboard.blackboard.duty])
         elif self.blackboard.blackboard.duty == 'defense':
-            goal = np.array(self.role_positions[self.blackboard.blackboard.duty][role_positions['pos_number']])
+            goal = np.array(self.role_positions[self.blackboard.blackboard.duty][self.role_positions['pos_number']])
         elif self.blackboard.blackboard.duty == 'offense':
             kickoff_type = 'active' if self.blackboard.gamestate.has_kickoff() else 'passive'
             goal = np.array(
-                self.role_positions[self.blackboard.blackboard.duty][kickoff_type][role_positions['pos_number']])
+                self.role_positions[self.blackboard.blackboard.duty][kickoff_type][self.role_positions['pos_number']])
 
         if goal is None or self.blackboard.pathfinding.current_pose is None:
             return "NO"
