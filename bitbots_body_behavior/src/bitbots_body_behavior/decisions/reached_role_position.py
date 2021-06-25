@@ -7,7 +7,7 @@ class ReachedRolePosition(AbstractDecisionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super(ReachedRolePosition, self).__init__(blackboard, dsd, parameters)
 
-        self.threshould = parameters['thres']
+        self.threshold = 0.3
         self.role_positions = self.blackboard.config['role_positions']
 
     def perform(self, reevaluate=False):
@@ -25,12 +25,9 @@ class ReachedRolePosition(AbstractDecisionElement):
             goal = np.array(
                 self.role_positions[self.blackboard.blackboard.duty][kickoff_type][self.role_positions['pos_number']])
 
-        if goal is None or self.blackboard.pathfinding.current_pose is None:
-            return "NO"
-
-        position = np.array([self.blackboard.pathfinding.current_pose.pose.position.x,
-                             self.blackboard.pathfinding.current_pose.pose.position.y])
-        if np.linalg.norm(goal - position) < self.threshould:
+        robot_position = self.blackboard.world_model.get_current_position()
+        position = np.array([robot_position[0], robot_position[1]])
+        if np.linalg.norm(goal - position) < self.threshold:
             return 'YES'
         return 'NO'
 
