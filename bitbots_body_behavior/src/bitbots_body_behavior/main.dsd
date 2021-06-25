@@ -185,7 +185,9 @@ $IsPenalized
                     GOALIE --> @LookAtFieldFeatures, @GoToRolePosition
                     ELSE --> #SearchBall
                 YES --> $KickOffTimeUp
-                    NO_NORMAL --> #StandAndLook
+                    NO_NORMAL --> $ReachedRolePosition
+                        YES --> #StandAndLook
+                        NO --> @GoToRolePosition
                     NO_FREEKICK --> #Placing
                     YES --> $ConfigRole
                         GOALIE --> $BallInOwnPercent + p:33
