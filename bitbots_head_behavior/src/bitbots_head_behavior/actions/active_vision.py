@@ -2,6 +2,8 @@ import math
 import numpy as np
 import rospy
 
+import onnxruntime as ort
+
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
@@ -14,6 +16,7 @@ class ActiveVision(AbstractActionElement):
         super(ActiveVision, self).__init__(dsd, blackboard, parameters)
         # Load model
 
+        self.ort_sess = ort.InferenceSession("/tmp/best_model.zip")
 
     def perform(self, reevaluate=False):
         """
@@ -49,7 +52,7 @@ class ActiveVision(AbstractActionElement):
         # Phase
         phase = math.sin(rospy.Time.now().to_sec()/10)
 
-        print(
+        observation = np.array([
             robot_x,
             robot_y,
             robot_theta_sin,
@@ -59,4 +62,19 @@ class ActiveVision(AbstractActionElement):
             phase,
             ball_x,
             ball_y,
-            ball_conf)
+            ball_conf], dtype=np.float32)
+
+        action, _ = self.ort_sess.run(None, {'input.1': observation})
+
+        action = (action + 1) / 2
+
+        goal_pan = (max(pan_limits) - min(pan_limits)) * action[0] + min(pan_limits)
+        goal_tilt = (max(tilt_limits) - min(tilt_limits)) * action[1] + min(tilt_limits)
+
+        self.blackboard.head_capsule.send_motor_goals(
+            goal_pan,
+            goal_tilt,
+            pan_speed=6,
+            tilt_speed=6)
+
+        print(action, observation)
