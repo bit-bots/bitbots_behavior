@@ -1,10 +1,11 @@
 import math
 import numpy as np
 import rospy
-from geometry_msgs.msg import PointStamped
+
+from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
-class ActiveVision(AbstractLookAt):
+class ActiveVision(AbstractActionElement):
     """
     Loads and runs the active vision policy
     """
