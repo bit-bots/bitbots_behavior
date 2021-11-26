@@ -16,7 +16,7 @@ class ActiveVision(AbstractActionElement):
         super(ActiveVision, self).__init__(dsd, blackboard, parameters)
         # Load model
 
-        self.ort_sess = ort.InferenceSession("/tmp/best_model.zip")
+        self.ort_sess = ort.InferenceSession("/tmp/best_model.onnx")
 
     def perform(self, reevaluate=False):
         """
