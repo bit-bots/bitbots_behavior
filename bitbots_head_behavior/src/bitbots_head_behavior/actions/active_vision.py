@@ -28,7 +28,7 @@ class ActiveVision(AbstractActionElement):
         # Get last ball position
         point = self.blackboard.world_model.get_ball_stamped_relative()
         ball_x, ball_y = point.point.x, point.point.y
-        ball_conf = max(0, 1 - 0.1 * self.blackboard.world_model.ball_seen_time.to_sec())
+        ball_conf = max(0, 1 - 0.1 * (rospy.Time.now() - self.blackboard.world_model.ball_seen_time).to_sec())
         # Normalize
         ball_x = ball_x / self.blackboard.world_model.field_length + 0.5
         ball_y = ball_y / self.blackboard.world_model.field_width + 0.5
