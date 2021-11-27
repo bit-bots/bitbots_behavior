@@ -45,12 +45,12 @@ class ActiveVision(AbstractActionElement):
         current_head_pan, current_head_tilt = self.blackboard.head_capsule.get_head_position()
         # Normalize
         pan_limits = [math.radians(-90),math.radians(90)]
-        current_head_pan = (current_head_pan - min(pan_limits)) / (max(pan_limits) - min(pan_limits))
-        tilt_limits = [0,math.radians(60)]
-        current_head_tilt =  (current_head_tilt - min(tilt_limits)) / (max(tilt_limits) - min(tilt_limits))
+        current_head_pan = 1 - (current_head_pan - min(pan_limits)) / (max(pan_limits) - min(pan_limits))
+        tilt_limits = [0,math.radians(75)]
+        current_head_tilt =  (-current_head_tilt - min(tilt_limits)) / (max(tilt_limits) - min(tilt_limits))
 
         # Phase
-        phase = math.sin(rospy.Time.now().to_sec()/10)
+        phase = (math.sin(rospy.Time.now().to_sec()) + 1) * 0.5
 
         observation = np.array([
             robot_x,
@@ -62,19 +62,19 @@ class ActiveVision(AbstractActionElement):
             phase,
             ball_x,
             ball_y,
-            ball_conf], dtype=np.float32)
+            ball_conf], dtype=np.float32).reshape((1, -1))
 
         action, _ = self.ort_sess.run(None, {'input.1': observation})
 
-        action = (action + 1) / 2
+        action = (action[0] + 1) / 2
+
+        action[0] = 1 - action[0]
 
         goal_pan = (max(pan_limits) - min(pan_limits)) * action[0] + min(pan_limits)
-        goal_tilt = (max(tilt_limits) - min(tilt_limits)) * action[1] + min(tilt_limits)
+        goal_tilt = - (max(tilt_limits) - min(tilt_limits)) * action[1] + min(tilt_limits)
 
         self.blackboard.head_capsule.send_motor_goals(
             goal_pan,
             goal_tilt,
             pan_speed=6,
             tilt_speed=6)
-
-        print(action, observation)
