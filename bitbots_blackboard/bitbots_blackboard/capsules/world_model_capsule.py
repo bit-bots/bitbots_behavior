@@ -100,12 +100,12 @@ class WorldModelCapsule:
         self.pose_precision_threshold = self.node.get_parameter('behavior/body/pose_precision_threshold').get_parameter_value().double_value
 
         # Publisher for visualization in RViZ
-        self.ball_publisher = self.create_publisher(PointStamped, 'debug/viz_ball', 1)
-        self.goal_publisher = self.create_publisher(PoseWithCertaintyArray, 'debug/viz_goal', 1)
-        self.ball_twist_publisher = self.create_publisher(TwistStamped, 'debug/ball_twist', 1)
-        self.used_ball_pub = self.create_publisher(PointStamped, 'debug/used_ball', 1)
-        self.which_ball_pub = self.create_publisher(Header, 'debug/which_ball_is_used', 1)
-        self.costmap_publisher = self.create_publisher(OccupancyGrid, 'debug/costmap', 1)
+        self.ball_publisher = self.node.create_publisher(PointStamped, 'debug/viz_ball', 1)
+        self.goal_publisher = self.node.create_publisher(PoseWithCertaintyArray, 'debug/viz_goal', 1)
+        self.ball_twist_publisher = self.node.create_publisher(TwistStamped, 'debug/ball_twist', 1)
+        self.used_ball_pub = self.node.create_publisher(PointStamped, 'debug/used_ball', 1)
+        self.which_ball_pub = self.node.create_publisher(Header, 'debug/which_ball_is_used', 1)
+        self.costmap_publisher = self.node.create_publisher(OccupancyGrid, 'debug/costmap', 1)
 
         self.base_costmap = None  # generated once in constructor field features
         self.costmap = None  # updated on the fly based on the base_costmap
