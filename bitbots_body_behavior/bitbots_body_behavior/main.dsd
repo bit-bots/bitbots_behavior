@@ -173,30 +173,19 @@ $BallSeen
                         THIRD --> #DefensePositioning
                     LOW --> #ReorientationPause
                 NO --> #ReorientationPause
+
+#HackyWalkIn
+@GoToRelativePosition + x:2 + y:0 + t:0, @Stand
+
 -->BodyBehavior
 $IsPenalized
     YES --> #DoNothing
     JUST_UNPENALIZED --> $GameStateDecider
         INITIAL --> #Init
-        ELSE --> #GetWalkreadyAndLocalize
+        ELSE --> #HackyWalkIn
     NO --> $GameStateDecider
         INITIAL --> #Init
-        READY --> $AnyGoalScoreRecently + time:50
-            YES --> #PositioningReady
-            NO --> $DoOnce
-                NOT_DONE --> @ChangeAction + action:waiting + r:false, @LookAtFieldFeatures + r:false, @Stand + duration:1, @GetWalkready + r:false
-                DONE --> #PositioningReady
-        SET --> $SecondaryStateDecider
-            PENALTYSHOOT --> $SecondaryStateTeamDecider
-                OUR --> @Stand + duration:0.1 + r:false, @DeactivateHCM + r:false, @LookForward + r:false, @PlayAnimationInit + r:false, @GetWalkready + r:false, @Stand // we need to also see the goalie
-                OTHER --> @Stand + duration:0.1 + r:false, @DeactivateHCM + r:false, @LookForward + r:false, @PlayAnimationInit + r:false, @GetWalkready + r:false, @LookAtBall + r:false, @PlayAnimationGoalieArms + r:false, @Stand // goalie only needs to care about the ball
-            ELSE --> #StandAndLook
+        READY --> #HackyWalkIn
+        SET --> #StandAndLook
         FINISHED --> #Init
-        PLAYING --> $SecondaryStateDecider
-            PENALTYSHOOT --> #PenaltyShootoutBehavior
-            TIMEOUT --> #StandAndLook
-            ELSE --> $SecondaryStateModeDecider
-                ELSE --> #StandAndLook
-                PLACING --> #Placing
-            NORMAL --> #NormalBehavior
-            OVERTIME --> #NormalBehavior
+        PLAYING --> #StandAndLook
