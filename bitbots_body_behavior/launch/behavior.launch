@@ -7,4 +7,6 @@
     </group>
 
     <include file="$(find-pkg-share bitbots_head_behavior)/launch/head_behavior.launch" />
+    <!-- todo this is a hack -->
+    <node pkg="tf2_ros" exec="static_transform_publisher" name="static_map2odom_tf" args="--x -0.0 --y -0.0 --z 0.0 --qx 0.0 --qy 0.0 --qz 0.0 --qw 1.0 --frame-id map --child-frame-id odom" />
 </launch>
