@@ -175,7 +175,9 @@ $BallSeen
                 NO --> #ReorientationPause
 
 #HackyWalkIn
-@GoToRelativePosition + x:2 + y:0 + t:0, @Stand
+$ReachedMovebaseGoalPosition + thres:0.1
+    YES --> @GoToRelativePosition + x:1.0 + y:0.0 + t:0.0 
+    NO --> @Stand
 
 -->BodyBehavior
 $IsPenalized
