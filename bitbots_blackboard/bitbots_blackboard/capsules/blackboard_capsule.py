@@ -16,7 +16,9 @@ class BlackboardCapsule:
         self.node = node
         self.my_data = {}
         self.head_pub = None  # type: rospy.Publisher
-        self.duty = get_parameters_from_other_node(self.node, 'parameter_blackboard', ['role'])['role']
+        params = get_parameters_from_other_node(self.node, 'parameter_blackboard', ['role', 'position_number'])
+        self.duty = params['role']
+        self.position_number = params['position_number']
         self.state = None  # type: RobotControlState
 
         self.tf_buffer = tf2.Buffer(cache_time=Duration(seconds=30.0))

@@ -62,9 +62,9 @@ class BodyDSD:
         self.dsd.blackboard.dynup_action_client = ActionClient(node, Dynup, 'dynup')
 
         # TODO: callbacks away from the blackboard!
+        node.create_subscription(GameState, "gamestate", blackboard.gamestate.gamestate_callback, qos_profile=1)
         node.create_subscription(PoseWithCovarianceStamped, "ball_position_relative_filtered", blackboard.world_model.ball_filtered_callback, qos_profile=1)
         node.create_subscription(PoseWithCertaintyArray, "goal_posts_relative", blackboard.world_model.goalposts_callback, qos_profile=1)
-        node.create_subscription(GameState, "gamestate", blackboard.gamestate.gamestate_callback, qos_profile=1)
         node.create_subscription(TeamData, "team_data", blackboard.team_data.team_data_callback, qos_profile=1)
         node.create_subscription(PoseWithCovarianceStamped, "pose_with_covariance", blackboard.world_model.pose_callback, qos_profile=1)
         node.create_subscription(PointCloud2, "robot_obstacles", blackboard.world_model.robot_obstacle_callback, qos_profile=1)
