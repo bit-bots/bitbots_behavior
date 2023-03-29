@@ -19,9 +19,17 @@ class BodyBlackboard:
     def __init__(self, node: Node):
         self.node = node
 
+        # Parameters
         self.config = get_parameter_dict(node, "body")
         self.base_footprint_frame: str = self.node.get_parameter("base_footprint_frame").value
+        self.cheering_animation: str = self.node.get_parameter("Animations.Misc.cheering").value
+        self.goalie_arms_animation: str = self.node.get_parameter("Animations.Goalie.goalieArms").value
+        self.goalie_falling_center_animation: str = self.node.get_parameter("Animations.Goalie.fallCenter").value
+        self.goalie_falling_left_animation: str = self.node.get_parameter("Animations.Goalie.fallLeft").value
+        self.goalie_falling_right_animation: str = self.node.get_parameter("Animations.Goalie.fallRight").value
+        self.init_animation: str = self.node.get_parameter("Animations.Misc.init").value
         self.map_frame: str = self.node.get_parameter("map_frame").value
+
         self.blackboard = BlackboardCapsule(node)
         self.gamestate = GameStatusCapsule(node)
         self.animation = AnimationCapsule(node)
@@ -30,12 +38,6 @@ class BodyBlackboard:
         self.costmap = CostmapCapsule(self)
         self.pathfinding = PathfindingCapsule(self, node)
         self.team_data = TeamDataCapsule(node)
-        self.goalie_arms_animation: str = self.node.get_parameter("Animations.Goalie.goalieArms").value
-        self.goalie_falling_right_animation: str = self.node.get_parameter("Animations.Goalie.fallRight").value
-        self.goalie_falling_left_animation: str = self.node.get_parameter("Animations.Goalie.fallLeft").value
-        self.goalie_falling_center_animation: str = self.node.get_parameter("Animations.Goalie.fallCenter").value
-        self.cheering_animation: str = self.node.get_parameter("Animations.Misc.cheering").value
-        self.init_animation: str = self.node.get_parameter("Animations.Misc.init").value
 
         self.dynup_action_client: Optional[ActionClient] = None
         self.dynup_cancel_pub: Optional[Publisher] = None
@@ -49,3 +51,4 @@ class HeadBlackboard:
         self.head_capsule = HeadCapsule(self)
         self.world_model = WorldModelCapsule(self)
         self.costmap = CostmapCapsule(self)
+        self.team_data = TeamDataCapsule(node)

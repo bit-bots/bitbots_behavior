@@ -1,8 +1,6 @@
-import rclpy
 from rclpy.clock import ClockType
 from rclpy.duration import Duration
 from rclpy.time import Time
-from rclpy.node import Node
 
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
 
@@ -25,8 +23,7 @@ class BallSeen(AbstractDecisionElement):
         :param reevaluate: Has no effect
         """
 
-        ball_last_seen = self.blackboard.world_model.ball_last_seen()
-        if ball_last_seen != Time(seconds=0, clock_type=ClockType.ROS_TIME) and self.blackboard.node.get_clock().now() - ball_last_seen < self.ball_lost_time:
+        if self.blackboard.world_model.has_ball_been_seen_by_myself():
             return 'YES'
         return 'NO'
 

@@ -46,7 +46,7 @@ $BallKickArea
     FAR --> @ChangeAction + action:going_to_ball, @GoToBall + target:close
 
 #NoLocalizationPlayerBehavior
-$BallSeen
+$BallSeenByMyself
     YES --> $BallClose
         YES --> $GoalSeen
             YES --> #GoAndKickBallDetectionGoal
@@ -55,7 +55,7 @@ $BallSeen
     NO --> #SearchBall
 
 #NoLocalizationGoalieBehavior
-$BallSeen
+$BallSeenByMyself
     YES --> $BallClose
         YES --> #GoAndKickBallAway
         NO --> @ChangeAction + action:waiting, @LookAtBall, @Stand
@@ -131,7 +131,7 @@ $DoOnce
     NOT_DONE --> @ForgetBall, @LookAtFieldFeatures
     DONE --> $ConfigRole
         GOALIE --> @ChangeAction + action:positioning, @GoToBlockPosition, @LookAtFieldFeatures
-        ELSE --> $BallSeen
+        ELSE --> $BallSeenByMyself
             NO --> $SecondaryStateTeamDecider
                 OUR --> #SearchBall
                 OTHER --> @AvoidBallActive, @LookAtFieldFeatures, @WalkInPlace + duration:2, @GoToRelativePosition + x:1 + y:0 + t:0, @Stand
@@ -156,7 +156,7 @@ $DoOnce
 @Stand + duration:0.1 + r:false, @ChangeAction + action:waiting, @LookForward, @Stand
 
 #NormalBehavior
-$BallSeen
+$BallSeenByMyself
     NO --> $ConfigRole
         GOALIE --> @LookAtFieldFeatures, @GoToRolePosition
         ELSE --> #SearchBall

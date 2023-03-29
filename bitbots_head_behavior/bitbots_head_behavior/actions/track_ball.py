@@ -1,14 +1,10 @@
-import rclpy
-from rclpy.node import Node
-from geometry_msgs.msg import PointStamped
-
 from bitbots_head_behavior.actions.look_at import AbstractLookAt
 
 
 class TrackBall(AbstractLookAt):
     """
     This action follows the seen ball so that it the camera always points towards it.
-    We try to do this so that the ball doesnt get lost as easily
+    We try to do this so that the ball doesn't get lost as easily
     """
 
     def __init__(self, dsd, blackboard, parameters=None):
@@ -24,7 +20,7 @@ class TrackBall(AbstractLookAt):
         """
 
         # Get last ball position
-        point = self.blackboard.world_model.get_ball_stamped_relative()
+        point = self.blackboard.world_model.get_best_ball()
 
         # Call internal look-at to turn head to this point (when necessary)
         self.look_at(point,

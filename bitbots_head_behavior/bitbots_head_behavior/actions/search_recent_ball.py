@@ -1,9 +1,7 @@
 import math
 import rclpy
-from rclpy.node import Node
 from rclpy.duration import Duration
 import tf2_ros as tf2
-from geometry_msgs.msg import PointStamped
 
 from bitbots_head_behavior.actions.look_at import AbstractLookAt
 
@@ -27,7 +25,7 @@ class SearchRecentBall(AbstractLookAt):
 
         self._threshold = self.blackboard.config['position_reached_threshold']
 
-        # Get the coresponding motor goals for the ball position
+        # Get the corresponding motor goals for the ball position
         self._recent_ball_motor_goals = self._get_head_goals_for_recent_ball()
 
         self.first_perform = True
@@ -38,14 +36,14 @@ class SearchRecentBall(AbstractLookAt):
         """
         Returns the head motor goals to look at the most recent ball position.
 
-        :retruns tuple(head_pan, head_tilt): The head motor goals
+        :returns tuple(head_pan, head_tilt): The head motor goals
         """
-        # Check if Ball has been seen
-        if not self.blackboard.world_model.ball_seen:
+        # Check if ball has been seen
+        if not self.blackboard.world_model.get_time_ball_last_seen_by_myself_or_team():
             return
 
          # Get last ball position
-        point = self.blackboard.world_model.get_ball_stamped_relative()
+        point = self.blackboard.world_model.get_best_ball()
 
         # Transform the points reference frame to be the head
         try:
