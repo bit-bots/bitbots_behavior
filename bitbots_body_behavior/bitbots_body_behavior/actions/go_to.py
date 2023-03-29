@@ -11,10 +11,7 @@ from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 class GoToRelativePosition(AbstractActionElement):
     blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters: dict = None):
-        """Go to a position relative to the robot
-        :param dsd:
-
-        """
+        """Go to a position relative to the robot"""
         super(GoToRelativePosition, self).__init__(blackboard, dsd)
         self.point = float(parameters.get('x', 0)), float(parameters.get('y', 0)), float(parameters.get('t', 0))
         self.first = True
@@ -45,10 +42,7 @@ class GoToRelativePosition(AbstractActionElement):
 class GoToAbsolutePosition(AbstractActionElement):
     blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
-        """Go to an absolute position on the field
-        :param dsd:
-
-        """
+        """Go to an absolute position on the field"""
         super(GoToAbsolutePosition, self).__init__(blackboard, dsd)
         self.point = parameters
 
@@ -69,10 +63,7 @@ class GoToAbsolutePosition(AbstractActionElement):
 
 class GoToOwnGoal(GoToAbsolutePosition):
     def __init__(self, blackboard, dsd, parameters=None):
-        """Go to the own goal
-        :param dsd:
-
-        """
+        """Go to the own goal"""
         super(GoToOwnGoal, self).__init__(blackboard, dsd, parameters)
         self.point = (
             self.blackboard.world_model.get_map_based_own_goal_center_xy()[0],
@@ -82,10 +73,7 @@ class GoToOwnGoal(GoToAbsolutePosition):
 
 class GoToEnemyGoal(GoToAbsolutePosition):
     def __init__(self, blackboard, dsd, parameters=None):
-        """Go to the enemy goal
-        :param dsd:
-
-        """
+        """Go to the enemy goal"""
         super(GoToEnemyGoal, self).__init__(blackboard, dsd, parameters)
         self.point = (
             self.blackboard.world_model.get_map_based_opp_goal_center_xy()[0],
@@ -95,9 +83,6 @@ class GoToEnemyGoal(GoToAbsolutePosition):
 
 class GoToCenterpoint(GoToAbsolutePosition):
     def __init__(self, blackboard, dsd, parameters=None):
-        """Go to the center of the field and look towards the enemy goal
-        :param dsd:
-        """
+        """Go to the center of the field and look towards the enemy goal"""
         super(GoToCenterpoint, self).__init__(blackboard, dsd, parameters)
         self.point = 0, 0, 0
-

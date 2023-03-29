@@ -1,7 +1,3 @@
-"""
-AnimationCapsule
-^^^^^^^^^^^^^^^^
-"""
 from rclpy.action import ActionClient
 from rclpy.duration import Duration
 from rclpy.node import Node

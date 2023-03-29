@@ -4,7 +4,6 @@ This is the ROS-Node which contains the head behavior, starts the appropriate DS
 and subscribes to head_behavior specific ROS-Topics.
 """
 import os
-import threading
 
 import rclpy
 from rclpy.node import Node
@@ -24,7 +23,7 @@ from ament_index_python import get_package_share_directory
 def init(node: Node):
     """
     Initialize new components needed for head_behavior:
-    blackboard, dsd, rostopic subscriber
+    blackboard, dsd, subscribers
     """
     # This is a general purpose initialization function provided by moved
     # It is used to correctly initialize roscpp which is used in the collision checker module

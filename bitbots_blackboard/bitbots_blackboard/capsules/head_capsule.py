@@ -100,7 +100,7 @@ class HeadCapsule:
                 success = self.avoid_collision_on_path(pan_position, tilt_position, current_pan_position,
                                                        current_tilt_position, pan_speed, tilt_speed)
                 if not success:
-                    self.blackboard.node.get_logger().error("Unable to resolve head colision")
+                    self.blackboard.node.get_logger().error("Unable to resolve head collision")
                 return success
             else:
                 self.move_head_to_position_with_speed_adjustment(pan_position, tilt_position, current_pan_position,
@@ -127,10 +127,10 @@ class HeadCapsule:
             self.move_head_to_position_with_speed_adjustment(0, 0, current_pan, current_tilt, pan_speed, tilt_speed)
             return False
 
-        # Calculate distante in the joint space
+        # Calculate distance in the joint space
         distance = math.hypot(goal_pan - current_pan, goal_tilt - current_tilt)
 
-        # Caculate step size
+        # Calculate step size
         step_count = int(distance / math.radians(3))
 
         # Calculate path
@@ -160,7 +160,7 @@ class HeadCapsule:
         # Calculate the deltas
         delta_pan = abs(current_pan - goal_pan)
         delta_tilt = abs(current_tilt - goal_tilt)
-        # Check which speed should be lowred to achieve better interpolation
+        # Check which speed should be lowered to achieve better interpolation
         if delta_pan > delta_tilt:
             tilt_speed = self._calculate_lower_speed(delta_pan, delta_tilt, pan_speed)
         else:

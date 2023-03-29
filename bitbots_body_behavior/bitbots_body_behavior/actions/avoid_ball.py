@@ -28,4 +28,3 @@ class AvoidBallInactive(AvoidBall):
     def __init__(self, blackboard, dsd, parameters):
         parameters['active'] = False
         super(AvoidBallInactive, self).__init__(blackboard, dsd, parameters)
-
