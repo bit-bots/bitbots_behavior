@@ -16,7 +16,6 @@ class AbstractLookAt(AbstractActionElement):
 
         self.head_tf_frame = self.blackboard.node.get_parameter('base_link_frame').value  # base_link is required by bio_ik
         self.camera_frame = self.blackboard.node.get_parameter('camera_frame').value
-        self.bio_ik_request = IKRequest()
 
         # Service proxy for LookAt
         self.request = IKRequest()
@@ -35,11 +34,10 @@ class AbstractLookAt(AbstractActionElement):
 
     def get_motor_goals_from_point(self, point):
         """Call the look at service to calculate head motor goals"""
-        self.blackboard.node.get_logger().warning("##########in get motor goals")
         target = Point(x=point.x, y=point.y, z=point.z)
         self.request.look_at_goals[0].target = target
         response = get_bioik_ik(self.request)
-        states = response.solution.joint_state
+        states = response.ik_response.solution.joint_state
         return states.position[states.name.index('HeadPan')], states.position[states.name.index('HeadTilt')]
 
     def look_at(self, point, min_pan_delta=0, min_tilt_delta=0):
@@ -55,7 +53,7 @@ class AbstractLookAt(AbstractActionElement):
         """
         # transform the points reference frame to be the head
         try:
-            point = self.blackboard.head_capsule.tf_buffer.transform(point, self.head_tf_frame, timeout=Duration(seconds=0.9))
+            point = self.blackboard.tf_buffer.transform(point, self.head_tf_frame, timeout=Duration(seconds=0.9))
         except tf2.LookupException as e:
             self.blackboard.node.get_logger().warn('The frame {} is not being published (LookupException)'.format(self.head_tf_frame))
             return

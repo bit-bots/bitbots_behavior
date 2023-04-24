@@ -25,9 +25,6 @@ class WorldModelCapsule:
     def __init__(self, blackboard: "BodyBlackboard"):
         self._blackboard = blackboard
 
-        self.tf_buffer = tf2.Buffer(cache_time=Duration(seconds=30))
-        self.tf_listener = tf2.TransformListener(self.tf_buffer, self._blackboard.node)
-
         # Parameters
         parameters = get_parameters_from_other_node(
             self._blackboard.node,
@@ -124,7 +121,7 @@ class WorldModelCapsule:
                 teammate_ball = self._blackboard.team_data.get_teammate_ball()
                 if (
                     self._blackboard.team_data.teammate_ball_is_valid() and  # Teammate has seen the ball recently and is accurate enough
-                    self.tf_buffer.can_transform(  # AND the ball can be transformed
+                    self._blackboard.tf_buffer.can_transform(  # AND the ball can be transformed
                         self.base_footprint_frame,
                         teammate_ball.header.frame_id,
                         teammate_ball.header.stamp,
@@ -158,7 +155,7 @@ class WorldModelCapsule:
     def get_ball_position_uv(self) -> Tuple[float, float]:
         ball = self.get_best_ball()
         try:
-            ball_bfp = self.tf_buffer.transform(ball, self.base_footprint_frame, timeout=Duration(seconds=0.2)).point
+            ball_bfp = self._blackboard.tf_buffer.transform(ball, self.base_footprint_frame, timeout=Duration(seconds=0.2)).point
         except (tf2.ExtrapolationException) as e:
             self._blackboard.node.get_logger().warn(e)
             self._blackboard.node.get_logger().error('Severe transformation problem concerning the ball!')
@@ -194,9 +191,9 @@ class WorldModelCapsule:
 
         ball_buffer = PointStamped(header=msg.header, point=msg.pose.pose.position)
         try:
-            self.ball_base_footprint = self.tf_buffer.transform(ball_buffer, self.base_footprint_frame, timeout=Duration(seconds=1.0))
-            self.ball_odom = self.tf_buffer.transform(ball_buffer, self.odom_frame, timeout=Duration(seconds=1.0))
-            self.ball_map = self.tf_buffer.transform(ball_buffer, self.map_frame, timeout=Duration(seconds=1.0))
+            self.ball_base_footprint = self._blackboard.tf_buffer.transform(ball_buffer, self.base_footprint_frame, timeout=Duration(seconds=1.0))
+            self.ball_odom = self._blackboard.tf_buffer.transform(ball_buffer, self.odom_frame, timeout=Duration(seconds=1.0))
+            self.ball_map = self._blackboard.tf_buffer.transform(ball_buffer, self.map_frame, timeout=Duration(seconds=1.0))
 
             # Set timestamps to zero to get the newest transform when this is transformed later
             # TODO: Why? This sounds fishy
@@ -234,8 +231,8 @@ class WorldModelCapsule:
                 point_b.point.y = msg.twist.twist.linear.y
                 point_b.point.z = msg.twist.twist.linear.z
                 # transform start and endpoint of velocity vector
-                point_a = self.tf_buffer.transform(point_a, self.map_frame, timeout=Duration(seconds=1.0))
-                point_b = self.tf_buffer.transform(point_b, self.map_frame, timeout=Duration(seconds=1.0))
+                point_a = self._blackboard.tf_buffer.transform(point_a, self.map_frame, timeout=Duration(seconds=1.0))
+                point_b = self._blackboard.tf_buffer.transform(point_b, self.map_frame, timeout=Duration(seconds=1.0))
                 # build new twist using transform vector
                 self.ball_twist_map = TwistStamped(header=msg.header)
                 self.ball_twist_map.header.frame_id = self.map_frame
@@ -353,8 +350,10 @@ class WorldModelCapsule:
         """
         try:
             # get the most recent transform
-            transform = self.tf_buffer.lookup_transform(self.map_frame, self.base_footprint_frame,
-                                                        RclpyTime(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME))
+            transform = self._blackboard.tf_buffer.lookup_transform(
+                self.map_frame,
+                self.base_footprint_frame,
+                RclpyTime(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME))
         except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException) as e:
             self._blackboard.node.get_logger().warn(str(e))
             return None
@@ -388,13 +387,13 @@ class WorldModelCapsule:
         Returns whether we can transform into and from the map frame.
         """
         # if we can do this, we should be able to transform the ball
-        # (unless the localization dies in the next 0.2 seconds)
+        # (unless the localization died during the last 1.0 seconds)
         try:
-            t = self._blackboard.node.get_clock().now() - Duration(seconds=0.3)
+            t = self._blackboard.node.get_clock().now() - Duration(seconds=1.0)
         except TypeError as e:
             self._blackboard.node.get_logger().error(e)
             t = RclpyTime(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
-        return self.tf_buffer.can_transform(self.base_footprint_frame, self.map_frame, t)
+        return self._blackboard.tf_buffer.can_transform(self.base_footprint_frame, self.map_frame, t)
 
     ##########
     # Common #
