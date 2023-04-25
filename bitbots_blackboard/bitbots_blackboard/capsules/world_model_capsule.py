@@ -48,20 +48,12 @@ class WorldModelCapsule:
         self.obstacle_cost: float = self.body_config['obstacle_cost']
 
         # Placeholders
-        self.pose = PoseWithCovarianceStamped()  # Own pose with covariance
-        self._ball_seen: bool = False
-        self._ball_seen_time: RclpyTime = RclpyTime(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
-        self.ball_base_footprint = PointStamped()  # The ball in the base footprint frame
-        self.ball_base_footprint_default_header = Header(frame_id=self.base_footprint_frame, stamp=RclpyTime(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME).to_msg())
-        self.ball_base_footprint.header = self.ball_base_footprint_default_header
-        self.ball_odom = PointStamped()  # The ball in the odom frame (when localization is not usable)
-        self.ball_odom_default_header = Header(frame_id=self.odom_frame, stamp=RclpyTime(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME).to_msg())
-        self.ball_odom.header = self.ball_odom_default_header
-        self.ball_map = PointStamped()  # The ball in the map frame (when localization is usable)
-        self.ball_map_default_header = Header(frame_id=self.map_frame, stamp=RclpyTime(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME).to_msg())
-        self.ball_map.header = self.ball_map_default_header
+        self._ball_seen_time: Optional[RclpyTime] = None
+        self.ball_base_footprint: Optional[PointStamped] = None  # The ball in the base footprint frame
+        self.ball_odom: Optional[PointStamped] = None  # The ball in the odom frame (when localization is not usable)
+        self.ball_map: Optional[PointStamped] = None  # The ball in the map frame (when localization is usable)
         self.ball_twist_map: Optional[TwistStamped] = None
-        self.ball_filtered: Optional[PoseWithCovarianceStamped] = None
+        self.pose: Optional[PoseWithCovarianceStamped] = None  # Own pose with covariance
 
         # Publisher for visualization in RViZ
         self.debug_publisher_ball = self._blackboard.node.create_publisher(PointStamped, 'debug/viz_ball', 1)
@@ -76,7 +68,7 @@ class WorldModelCapsule:
     ### Ball ###
     ############
 
-    def get_time_ball_last_seen_by_myself(self) -> RclpyTime:
+    def get_time_ball_last_seen_by_myself(self) -> Optional[RclpyTime]:
         """Returns the time at which I myself have seen the ball last recently"""
         return self._ball_seen_time
 
@@ -91,19 +83,21 @@ class WorldModelCapsule:
         """
         if hasattr(self._blackboard, "team_data") and self.localization_precision_in_threshold():
             # Team data available and localization usable
-            # Compare times of ball seen by myself and teammate, return the latest
-            return max(self.get_time_ball_last_seen_by_myself(), self._blackboard.team_data.get_teammate_ball_seen_time())
-        else:
-            # Team data not available or localization not usable
-            # Return time of ball seen by myself
-            return self.get_time_ball_last_seen_by_myself()
+            myself_ball_seen_time = self.get_time_ball_last_seen_by_myself()
+            teammate_ball_seen_time = self._blackboard.team_data.get_teammate_ball_seen_time()
+            if myself_ball_seen_time is not None and teammate_ball_seen_time != RclpyTime(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME):
+                # Compare times of ball seen by myself and teammate, return the latest
+                return max(myself_ball_seen_time, teammate_ball_seen_time)
+        # Team data not available or localization not usable or teammate has not seen the ball
+        # Return time of ball seen by myself
+        return self.get_time_ball_last_seen_by_myself()
 
     def has_ball_been_seen_by_myself_or_team(self) -> bool:
         """Returns true if I myself or a teammate have seen the ball recently (less than ball_lost_time ago)"""
         elapsed_time: Duration = self._blackboard.node.get_clock().now() - self.get_time_ball_last_seen_by_myself_or_team()
         return elapsed_time < self.ball_lost_time
 
-    def get_best_ball(self) -> PointStamped:
+    def get_best_ball(self) -> Optional[PointStamped]:
         """
         Returns the best ball.
         """
@@ -115,7 +109,7 @@ class WorldModelCapsule:
                 self.has_ball_been_seen_by_myself() or  # I myself have seen the ball recently
                 not hasattr(self._blackboard, "team_data")  # OR Team data not available
             ):
-                best_ball = self.ball_map
+                best_ball = self.ball_map  # This could be None, if I myself have not seen the ball recently
                 debug_frame_id = "own_ball_map"
             else:  # I myself have not seen the ball recently but team data is available
                 teammate_ball = self._blackboard.team_data.get_teammate_ball()
@@ -133,10 +127,10 @@ class WorldModelCapsule:
                     self._blackboard.node.get_logger().warning(
                         "My ball is bad but the teammates ball is worse or cant be transformed")
                     # Fall back to my own ball
-                    best_ball = self.ball_map
+                    best_ball = self.ball_map  # This could be None, if I myself have not seen the ball recently
                     debug_frame_id = "own_ball_map"
         else:  # Localization not usable
-            best_ball = self.ball_odom
+            best_ball = self.ball_odom  # This could be None, if I myself have not seen the ball recently
             debug_frame_id = "own_ball_odom"
 
         # Publish debug information
@@ -147,13 +141,17 @@ class WorldModelCapsule:
         self.debug_publisher_used_ball.publish(best_ball)
         return best_ball
 
-    def get_ball_position_xy(self) -> Tuple[float, float]:
+    def get_ball_position_xy(self) -> Optional[Tuple[float, float]]:
         """Return the ball saved in the map or odom frame"""
         ball = self.get_best_ball()
+        if ball is None:
+            return None
         return ball.point.x, ball.point.y
 
-    def get_ball_position_uv(self) -> Tuple[float, float]:
+    def get_ball_position_uv(self) -> Optional[Tuple[float, float]]:
         ball = self.get_best_ball()
+        if ball is None:
+            return None
         try:
             ball_bfp = self._blackboard.tf_buffer.transform(ball, self.base_footprint_frame, timeout=Duration(seconds=0.2)).point
         except (tf2.ExtrapolationException) as e:
@@ -179,11 +177,11 @@ class WorldModelCapsule:
         return math.atan2(v, u)
 
     def ball_filtered_callback(self, msg: PoseWithCovarianceStamped):
-        self.ball_filtered = msg
+        ball_filtered = msg
 
         # When the precision is not sufficient, the ball ages.
-        x_sdev = msg.pose.covariance[0]  # position 0,0 in a 6x6-matrix
-        y_sdev = msg.pose.covariance[7]  # position 1,1 in a 6x6-matrix
+        x_sdev = ball_filtered.pose.covariance[0]  # position 0,0 in a 6x6-matrix
+        y_sdev = ball_filtered.pose.covariance[7]  # position 1,1 in a 6x6-matrix
         if x_sdev > self.body_config['ball_position_precision_threshold']['x_sdev'] or \
                 y_sdev > self.body_config['ball_position_precision_threshold']['y_sdev']:
             self.forget_ball(own=True, team=False, reset_ball_filter=False)
@@ -201,7 +199,6 @@ class WorldModelCapsule:
             self.ball_map.header.stamp: MsgTime = RclpyTime(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME).to_msg()
 
             self._ball_seen_time = RclpyTime.from_msg(msg.header.stamp)
-            self._ball_seen = True
             self.debug_publisher_ball.publish(self.ball_base_footprint)
 
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
@@ -257,9 +254,10 @@ class WorldModelCapsule:
         :type reset_ball_filter: bool, optional
         """
         if own:  # Forget own ball
-            self._ball_seen_time = RclpyTime(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
-            self.ball_base_footprint = PointStamped()
-            self.ball_base_footprint.header = self.ball_base_footprint_default_header
+            self._ball_seen_time = None
+            self.ball_base_footprint = None
+            self.ball_odom = None
+            self.ball_map = None
 
         if team:  # Forget team ball
             self._blackboard.team_data.forget_teammate_ball()
@@ -275,38 +273,44 @@ class WorldModelCapsule:
     # Goal #
     ########
 
-    def get_map_based_opp_goal_center_uv(self):
+    def get_map_based_opp_goal_center_uv(self) -> Optional[Tuple[float, float]]:
         x, y = self.get_map_based_opp_goal_center_xy()
         return self.get_uv_from_xy(x, y)
 
-    def get_map_based_opp_goal_center_xy(self):
+    def get_map_based_opp_goal_center_xy(self) -> Tuple[float, float]:
         return self.field_length / 2, 0.0
 
-    def get_map_based_own_goal_center_uv(self):
+    def get_map_based_own_goal_center_uv(self) -> Optional[Tuple[float, float]]:
         x, y = self.get_map_based_own_goal_center_xy()
         return self.get_uv_from_xy(x, y)
 
-    def get_map_based_own_goal_center_xy(self):
+    def get_map_based_own_goal_center_xy(self) -> Tuple[float, float]:
         return -self.field_length / 2, 0.0
 
-    def get_map_based_opp_goal_angle_from_ball(self):
-        ball_x, ball_y = self.get_ball_position_xy()
+    def get_map_based_opp_goal_angle_from_ball(self) -> Optional[float]:
+        ball_position_xy = self.get_ball_position_xy()
+        if ball_position_xy is None:
+            return None
+        ball_x, ball_y = ball_position_xy
         goal_x, goal_y = self.get_map_based_opp_goal_center_xy()
         return math.atan2(goal_y - ball_y, goal_x - ball_x)
 
-    def get_map_based_opp_goal_distance(self):
+    def get_map_based_opp_goal_distance(self) -> Optional[float]:
         x, y = self.get_map_based_opp_goal_center_xy()
         return self.get_distance_to_xy(x, y)
 
-    def get_map_based_opp_goal_angle(self):
-        x, y = self.get_map_based_opp_goal_center_uv()
+    def get_map_based_opp_goal_angle(self) -> Optional[float]:
+        uv = self.get_map_based_opp_goal_center_uv()
+        if uv is None:
+            return None
+        x, y = uv 
         return math.atan2(y, x)
 
-    def get_map_based_opp_goal_left_post_uv(self):
+    def get_map_based_opp_goal_left_post_uv(self) -> Optional[Tuple[float, float]]:
         x, y = self.get_map_based_opp_goal_center_xy()
         return self.get_uv_from_xy(x, y - self.goal_width / 2)
 
-    def get_map_based_opp_goal_right_post_uv(self):
+    def get_map_based_opp_goal_right_post_uv(self) -> Optional[Tuple[float, float]]:
         x, y = self.get_map_based_opp_goal_center_xy()
         return self.get_uv_from_xy(x, y + self.goal_width / 2)
 
@@ -317,7 +321,7 @@ class WorldModelCapsule:
     def pose_callback(self, pose: PoseWithCovarianceStamped):
         self.pose = pose
 
-    def get_current_position(self) -> Tuple[float, float, float]:
+    def get_current_position(self) -> Optional[Tuple[float, float, float]]:
         """
         Returns the current position as determined by the localization
         :returns x,y,theta
@@ -344,7 +348,7 @@ class WorldModelCapsule:
         ps.pose.orientation = transform.transform.rotation
         return ps
 
-    def get_current_position_transform(self) -> TransformStamped:
+    def get_current_position_transform(self) -> Optional[TransformStamped]:
         """
         Returns the current position as determined by the localization as a TransformStamped
         """
@@ -363,10 +367,13 @@ class WorldModelCapsule:
         """
         Returns the current localization precision based on the covariance matrix.
         """
-        x_sdev = self.pose.pose.covariance[0]  # position 0,0 in a 6x6-matrix
-        y_sdev = self.pose.pose.covariance[7]  # position 1,1 in a 6x6-matrix
-        theta_sdev = self.pose.pose.covariance[35]  # position 5,5 in a 6x6-matrix
-        return (x_sdev, y_sdev, theta_sdev)
+        if self.pose is None:
+            return (np.inf, np.inf, np.inf)
+        else:
+            x_sdev = self.pose.pose.covariance[0]  # position 0,0 in a 6x6-matrix
+            y_sdev = self.pose.pose.covariance[7]  # position 1,1 in a 6x6-matrix
+            theta_sdev = self.pose.pose.covariance[35]  # position 5,5 in a 6x6-matrix
+            return (x_sdev, y_sdev, theta_sdev)
 
     def localization_precision_in_threshold(self) -> bool:
         """
@@ -399,9 +406,11 @@ class WorldModelCapsule:
     # Common #
     ##########
 
-    def get_uv_from_xy(self, x, y) -> Tuple[float, float]:
-        """ Returns the relativ positions of the robot to this absolute position"""
+    def get_uv_from_xy(self, x, y) -> Optional[Tuple[float, float]]:
+        """Returns the relativ positions of the robot to this absolute position"""
         current_position = self.get_current_position()
+        if current_position is None:
+            return None
         x2 = x - current_position[0]
         y2 = y - current_position[1]
         theta = -1 * current_position[2]
@@ -409,15 +418,21 @@ class WorldModelCapsule:
         v = math.cos(theta) * y2 - math.sin(theta) * x2
         return u, v
 
-    def get_xy_from_uv(self, u, v):
-        """ Returns the absolute position from the given relative position to the robot"""
-        pos_x, pos_y, theta = self.get_current_position()
+    def get_xy_from_uv(self, u, v) -> Optional[Tuple[float, float]]:
+        """Returns the absolute position from the given relative position to the robot"""
+        current_position = self.get_current_position()
+        if current_position is None:
+            return None
+        pos_x, pos_y, theta = current_position
         angle = math.atan2(v, u) + theta
         hypotenuse = math.hypot(u, v)
         return pos_x + math.sin(angle) * hypotenuse, pos_y + math.cos(angle) * hypotenuse
 
-    def get_distance_to_xy(self, x, y):
-        """ Returns distance from robot to given position """
-        u, v = self.get_uv_from_xy(x, y)
+    def get_distance_to_xy(self, x, y) -> Optional[float]:
+        """Returns distance from robot to given position """
+        xy = self.get_uv_from_xy(x, y)
+        if xy is None:
+            return None
+        u, v = xy
         dist = math.hypot(u, v)
         return dist

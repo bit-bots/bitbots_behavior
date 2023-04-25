@@ -46,7 +46,6 @@ class TeamDataCapsule:
         self.strategy_update: float = 0.0
         self.action_update: float = 0.0
         self.role_update: float = 0.0
-        self.map_frame: str = self._blackboard.node.get_parameter('map_frame').value
         self.teammate_ball: Optional[PointStamped] = None
         self.data_timeout: float = self.node.get_parameter("team_data_timeout").value
         self.ball_max_covariance: float  = self.node.get_parameter("ball_max_covariance").value
