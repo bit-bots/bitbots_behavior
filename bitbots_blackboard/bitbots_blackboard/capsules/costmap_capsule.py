@@ -24,6 +24,7 @@ from tf_transformations import euler_from_quaternion, quaternion_from_euler
 
 
 class CostmapCapsule:
+    """Provides information about the cost of different positions and moves."""
     def __init__(self, blackboard: "BodyBlackboard"):
         self._blackboard = blackboard
         self._node = blackboard.node
