@@ -47,9 +47,7 @@ class TeamDataCapsule:
         self.action_update: float = 0.0
         self.role_update: float = 0.0
         self.map_frame: str = self._blackboard.node.get_parameter('map_frame').value
-        self.teammate_ball = PointStamped()
-        self.teammate_ball_default_header = Header(frame_id=self.map_frame, stamp=RclpyTime(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME).to_msg())
-        self.teammate_ball.header = self.teammate_ball_default_header
+        self.teammate_ball: Optional[PointStamped] = None
         self.data_timeout: float = self.node.get_parameter("team_data_timeout").value
         self.ball_max_covariance: float  = self.node.get_parameter("ball_max_covariance").value
         self.ball_lost_time: float = Duration(seconds=self.node.get_parameter('body.ball_lost_time').value)
@@ -209,9 +207,8 @@ class TeamDataCapsule:
 
     def get_teammate_ball_seen_time(self) -> RclpyTime:
         """Returns the time at which a teammate has seen the ball accurately enough"""
-        teammate_ball = self.get_teammate_ball()
-        if teammate_ball is not None:
-            return RclpyTime.from_msg(teammate_ball.header.stamp)
+        if self.teammate_ball_is_valid():
+            return RclpyTime.from_msg(self.get_teammate_ball().header.stamp)
         else:
             return RclpyTime(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
 
@@ -259,5 +256,4 @@ class TeamDataCapsule:
         return best_ball
 
     def forget_teammate_ball(self):
-        self.teammate_ball = PointStamped()
-        self.teammate_ball.header = self.teammate_ball_default_header
+        self.teammate_ball = None
