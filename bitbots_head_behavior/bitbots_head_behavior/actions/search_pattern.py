@@ -1,14 +1,12 @@
 import abc
 import math
 
-import rclpy
-
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
 class AbstractSearchPattern(AbstractActionElement):
     """
-    Executes the configured search_pattern repeatingly in order to try and and see as much
+    Executes the configured search_pattern repeatedly in order to try and and see as much
     space as possible and hopefully see the ball.
     """
 

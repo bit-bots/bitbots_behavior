@@ -1,7 +1,3 @@
-"""
-TeamDataCapsule
-^^^^^^^^^^^^^^^
-"""
 import math
 from typing import Dict, List, Optional, Tuple
 
@@ -11,8 +7,9 @@ from rclpy.clock import ClockType
 from rclpy.duration import Duration
 from rclpy.node import Node
 from rclpy.publisher import Publisher
-from rclpy.time import Time
-from std_msgs.msg import Float32
+from rclpy.time import Time as RclpyTime
+from builtin_interfaces.msg import Time as MsgTime
+from std_msgs.msg import Float32, Header
 
 from humanoid_league_msgs.msg import Strategy, TeamData
 
@@ -30,11 +27,9 @@ class TeamDataCapsule:
         self.strategy_sender: Optional[Publisher] = None
         self.time_to_ball_publisher: Optional[Publisher] = None
         # indexed with one to match robot ids
-        self.team_data : Dict[TeamData] = {}
+        self.team_data : Dict[int, TeamData] = {}
         for i in range(1, 7):
             self.team_data[i] = TeamData()
-        self.team_strategy = dict()
-        self.times_to_ball = dict()
         self.roles = {
             'striker': Strategy.ROLE_STRIKER,
             'offense': Strategy.ROLE_STRIKER,
@@ -51,6 +46,7 @@ class TeamDataCapsule:
         self.strategy_update: float = 0.0
         self.action_update: float = 0.0
         self.role_update: float = 0.0
+        self.teammate_ball: Optional[PointStamped] = None
         self.data_timeout: float = self.node.get_parameter("team_data_timeout").value
         self.ball_max_covariance: float  = self.node.get_parameter("ball_max_covariance").value
         self.ball_lost_time: float = Duration(seconds=self.node.get_parameter('body.ball_lost_time').value)
@@ -62,7 +58,7 @@ class TeamDataCapsule:
             'body.localization_precision_threshold.theta_sdev').value
 
     def is_valid(self, data: TeamData) -> bool:
-        return self.node.get_clock().now() - Time.from_msg(data.header.stamp) < Duration(seconds=self.data_timeout) \
+        return self.node.get_clock().now() - RclpyTime.from_msg(data.header.stamp) < Duration(seconds=self.data_timeout) \
                and data.state != TeamData.STATE_PENALIZED
 
     def get_goalie_ball_position(self) -> Optional[Tuple[float, float]]:
@@ -190,33 +186,40 @@ class TeamDataCapsule:
                 poses.append(data.robot_position.pose)
         return poses
 
+    def set_own_time_to_ball(self, time_to_ball: float):
+        self.own_time_to_ball = time_to_ball
+
     def get_own_time_to_ball(self) -> float:
         return self.own_time_to_ball
+
+    def publish_time_to_ball(self):
+        self.time_to_ball_publisher.publish(Float32(data=self.get_own_time_to_ball()))
 
     def team_data_callback(self, msg: TeamData):
         # Save team data
         self.team_data[msg.robot_id] = msg
+        self.teammate_ball = self._get_best_teammate_ball()
 
     def publish_strategy(self):
         """Publish for team comm"""
         self.strategy_sender.publish(self.strategy)
 
-    def publish_time_to_ball(self):
-        self.time_to_ball_publisher.publish(Float32(data=self.own_time_to_ball))
-
-    def get_teammate_ball_seen_time(self) -> Time:
+    def get_teammate_ball_seen_time(self) -> RclpyTime:
         """Returns the time at which a teammate has seen the ball accurately enough"""
-        teammate_ball = self.get_teammate_ball()
-        if teammate_ball is not None:
-            return Time.from_msg(teammate_ball.header.stamp)
+        if self.teammate_ball_is_valid():
+            return RclpyTime.from_msg(self.get_teammate_ball().header.stamp)
         else:
-            return Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
+            return RclpyTime(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
 
     def teammate_ball_is_valid(self):
         """Returns true if a teammate has seen the ball accurately enough"""
-        return self.get_teammate_ball() is not None
+        return self.teammate_ball is not None
 
     def get_teammate_ball(self) -> Optional[PointStamped]:
+        """Returns the ball from the closest teammate that has accurate enough localization and ball precision"""
+        return self.teammate_ball
+
+    def _get_best_teammate_ball(self) -> Optional[PointStamped]:
         """Returns the ball from the closest teammate that has accurate enough localization and ball precision"""
 
         def std_dev_from_covariance(covariance):
@@ -237,7 +240,7 @@ class TeamDataCapsule:
             robot = teamdata.robot_position
             robot_x_std_dev, robot_y_std_dev, robot_theta_std_dev = std_dev_from_covariance(robot.covariance)
             stamp = teamdata.header.stamp
-            if self.node.get_clock().now() - Time.from_msg(stamp) < self.ball_lost_time:
+            if self.node.get_clock().now() - RclpyTime.from_msg(stamp) < self.ball_lost_time:
                 if ball_x_std_dev < self.ball_max_covariance and ball_y_std_dev < self.ball_max_covariance:
                     if robot_x_std_dev < self.localization_precision_threshold_x_sdev and \
                             robot_y_std_dev < self.localization_precision_threshold_y_sdev and \
@@ -250,3 +253,6 @@ class TeamDataCapsule:
                             best_ball.point.y = teamdata.ball_absolute.pose.position.y
                             best_robot_dist = robot_dist
         return best_ball
+
+    def forget_teammate_ball(self):
+        self.teammate_ball = None

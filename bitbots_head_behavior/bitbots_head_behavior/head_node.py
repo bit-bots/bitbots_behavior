@@ -5,18 +5,19 @@ and subscribes to head_behavior specific ROS-Topics.
 """
 import os
 
+import rclpy
+from rclpy.node import Node
+from rclpy.executors import MultiThreadedExecutor
+from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
+from rclpy.duration import Duration
+
 import tf2_ros as tf2
 from ament_index_python import get_package_share_directory
 from bitbots_blackboard.blackboard import HeadBlackboard
 from geometry_msgs.msg import PoseWithCovarianceStamped
-from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
-from rclpy.executors import MultiThreadedExecutor
-from rclpy.node import Node
-from rclpy.duration import Duration
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Header
 
-import rclpy
 from bitbots_msgs.msg import JointCommand
 from dynamic_stack_decider.dsd import DSD
 from humanoid_league_msgs.msg import HeadMode as HeadModeMsg
@@ -25,7 +26,7 @@ from humanoid_league_msgs.msg import HeadMode as HeadModeMsg
 def init(node: Node):
     """
     Initialize new components needed for head_behavior:
-    blackboard, dsd, rostopic subscriber
+    blackboard, dsd, subscribers
     """
     tf2_buffer = tf2.Buffer(cache_time=Duration(seconds=30))
     tf2_listener = tf2.TransformListener(tf2_buffer, node)
@@ -74,7 +75,7 @@ def main(args=None):
     dsd = init(node)
 
     node.create_timer(1 / 60.0, dsd.update, callback_group=MutuallyExclusiveCallbackGroup())
-    # Number of executor threads is the number of MutiallyExclusiveCallbackGroups + 2 threads needed by the tf listener and executor
+    # Number of executor threads is the number of MutuallyExclusiveCallbackGroups + 2 threads needed by the tf listener and executor
     multi_executor = MultiThreadedExecutor(num_threads=7)
     multi_executor.add_node(node)
 

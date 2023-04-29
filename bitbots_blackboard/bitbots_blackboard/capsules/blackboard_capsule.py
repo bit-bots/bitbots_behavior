@@ -1,7 +1,3 @@
-"""
-BehaviourBlackboardCapsule
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-"""
 from typing import Optional
 
 from rclpy.duration import Duration

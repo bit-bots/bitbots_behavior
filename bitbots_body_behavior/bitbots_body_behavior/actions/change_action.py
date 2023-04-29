@@ -4,7 +4,6 @@ from humanoid_league_msgs.msg import Strategy
 from bitbots_blackboard.blackboard import BodyBlackboard
 
 
-
 class ChangeAction(AbstractActionElement):
     blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters):

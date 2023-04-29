@@ -53,7 +53,6 @@ def generate_launch_description():
                     "base_link_frame": "base_link",
                     "odom_frame": "odom",
                     "map_frame": "map",
-                    "ball_frame": "ball",
                     "ball_approach_frame": "ball_approach_frame",
                     "base_footprint_frame": "base_footprint"
                 }],

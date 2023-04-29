@@ -1,5 +1,3 @@
-import rclpy
-from rclpy.node import Node
 from humanoid_league_msgs.msg import HeadMode
 
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement

@@ -1,10 +1,3 @@
-"""
-GameStatusCapsule
-^^^^^^^^^^^^^^^^^
-
-Provides information about the current game state.
-
-"""
 from rclpy.node import Node
 
 from bitbots_utils.utils import get_parameters_from_other_node
@@ -12,6 +5,7 @@ from humanoid_league_msgs.msg import GameState
 
 
 class GameStatusCapsule:
+    """Provides information about the current game state."""
     def __init__(self, node: Node):
         self.node = node
         self.team_id = get_parameters_from_other_node(self.node, 'parameter_blackboard', ['team_id'])['team_id']

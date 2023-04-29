@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding:utf-8 -*-
 
 import rclpy
 from rclpy.node import Node
@@ -8,7 +7,7 @@ from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 
 def run():
-    node = Node("testHeadBehaviour")
+    node = Node("test_head_behavior")
     pub_ball = node.create_publisher(BallInImage, "ball_in_image", 1)
     pub_hmg = node.create_publisher(JointTrajectory, "head_motor_goals", 1)
 
@@ -49,4 +48,3 @@ def run():
 
 if __name__ == "__main__":
     run()
-
