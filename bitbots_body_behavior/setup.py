@@ -23,7 +23,7 @@ setup(
         ('share/' + package_name + '/decisions' ,
             glob.glob(package_name + '/decisions/*.py')),
         ('share/' + package_name,
-            glob.glob(package_name + '/*.dsd')),
+            [package_name+'/main.dsd'])
     ],
     scripts=[
         'scripts/backup_behavior.py',
