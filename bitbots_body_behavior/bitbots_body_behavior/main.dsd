@@ -1,5 +1,5 @@
 #SearchBall
-@ChangeAction + action:searching, @LookAtFieldFeatures, @WalkInPlace + duration:3, @TurnLeft
+@ChangeAction + action:searching, @LookAtFieldFeatures, @TurnLeft
 
 #DoNothing
 @ChangeAction + action:waiting, @LookForward, @Stand

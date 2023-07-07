@@ -124,9 +124,9 @@
 
       # the maximal allowed standard deviation of the localization pose.
       localization_precision_threshold:
-        x_sdev: 0.5
-        y_sdev: 0.5
-        theta_sdev: 0.6
+        x_sdev: 1
+        y_sdev: 1
+        theta_sdev: 2
 
 
       # Duration for which the robot tries to orient itself, when the localization precision is low.
