@@ -121,14 +121,8 @@ $LocalizationAvailable
 
 #PenaltyShootoutBehavior
 $SecondaryStateTeamDecider
-    OUR --> @StandAndWaitRandom + min:10 + max:30, @KickBallDynamic + r:true + type:penalty, @Stand
-    OTHER --> $BallDangerous + radius:1.3
-        LEFT --> @PlayAnimationGoalieFallLeft, @Stand
-        RIGHT --> @PlayAnimationGoalieFallRight, @Stand
-        CENTER --> @PlayAnimationGoalieFallCenter, @Stand
-        ELSE --> $BallSeen
-            YES --> @LookAtBall, @Stand
-            NO --> @SearchBall, @Stand
+    OUR --> #Dribble
+    OTHER --> @Stand
 
 
 #Placing
