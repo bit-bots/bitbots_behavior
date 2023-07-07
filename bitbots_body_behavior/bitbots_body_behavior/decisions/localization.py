@@ -41,18 +41,19 @@ class LocalizationPrecision(AbstractDecisionElement):
         :param reevaluate:
         :return:
         """
-        return "HIGH"
-        #  current_time = self.blackboard.node.get_clock().now()
-        #  last_decision_before_debounce: bool = current_time - self.last_decision_time > self.debounce
+        current_time = self.blackboard.node.get_clock().now()
+        last_decision_before_debounce: bool = current_time - self.last_decision_time > self.debounce
 
-        #  if last_decision_before_debounce:
-        #  if self.blackboard.world_model.localization_precision_in_threshold():
-        #  self.last_decision = "HIGH"
-        #  self.last_decision = "LOW"
+        if last_decision_before_debounce:
+            if self.blackboard.world_model.localization_precision_in_threshold():
+                self.last_decision = "HIGH"
+            self.last_decision = "LOW"
 
-        #  self.last_decision_time = current_time
+            self.last_decision_time = current_time
+            self.blackboard.node.get_logger().warn(f"made new decision was {self.last_decision}")
 
-        #  return self.last_decision
+        self.blackboard.node.get_logger().warn(f"returning {self.last_decision}")
+        return self.last_decision
 
     def get_reevaluate(self):
         return True

@@ -110,13 +110,11 @@ $PassStarted
 
 #GoalieRole
 $LocalizationAvailable
-    YES --> $LocalizationPrecision + debounce:4
-        HIGH --> $CurrentScore
-            BEHIND --> $LastPlayer
-                YES --> #StrikerRole
-                NO --> #GoalieBehavior
-            ELSE --> #GoalieBehavior
-        LOW --> #ReorientationPause
+    YES --> $CurrentScore
+        BEHIND --> $LastPlayer
+            YES --> #StrikerRole
+            NO --> #GoalieBehavior
+        ELSE --> #GoalieBehavior
     NO --> #ReorientationPause
 
 #PenaltyShootoutBehavior
@@ -171,12 +169,10 @@ $BallSeen
         YES --> $ConfigRole
             GOALIE --> #GoalieRole
             ELSE --> $LocalizationAvailable
-                YES --> $LocalizationPrecision + debounce:4
-                    HIGH --> $RankToBallNoGoalie
-                        FIRST --> #StrikerRole
-                        SECOND --> #SupporterRole
-                        THIRD --> #DefensePositioning
-                    LOW --> #ReorientationPause
+                YES --> $RankToBallNoGoalie
+                    FIRST --> #StrikerRole
+                    SECOND --> #SupporterRole
+                    THIRD --> #DefensePositioning
                 NO --> #ReorientationPause
 -->BodyBehavior
 $IsPenalized
