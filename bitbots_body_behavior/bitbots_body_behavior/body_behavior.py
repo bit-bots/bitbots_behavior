@@ -13,9 +13,10 @@ import os
 import rclpy
 import tf2_ros as tf2
 from ament_index_python import get_package_share_directory
-from bitbots_msgs.msg import GameState, RobotControlState, TeamData
+from bitbots_msgs.msg import RobotControlState, TeamData
 from bitbots_tf_listener import TransformListener
 from dynamic_stack_decider.dsd import DSD
+from game_controller_hl_interfaces.msg import GameState
 from geometry_msgs.msg import PoseWithCovarianceStamped, Twist, TwistWithCovarianceStamped
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration

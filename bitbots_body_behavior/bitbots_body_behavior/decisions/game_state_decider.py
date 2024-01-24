@@ -1,5 +1,5 @@
-from bitbots_msgs.msg import GameState
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
+from game_controller_hl_interfaces.msg import GameState
 
 from bitbots_blackboard.blackboard import BodyBlackboard
 
