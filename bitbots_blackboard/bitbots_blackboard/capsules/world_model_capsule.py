@@ -43,10 +43,7 @@ class WorldModelCapsule:
         self.base_footprint_frame: str = self._blackboard.node.get_parameter("base_footprint_frame").value
 
         self.ball = PointStamped()  # The ball in the base footprint frame
-        self.ball_odom = PointStamped()  # The ball in the odom frame (when localization is not usable)
-        self.ball_odom.header.stamp = Time(clock_type=ClockType.ROS_TIME).to_msg()
-        self.ball_odom.header.frame_id = self.odom_frame
-        self.ball_map = PointStamped()  # The ball in the map frame (when localization is usable)
+        self.ball_map = PointStamped()  # The ball in the map frame
         self.ball_map.header.stamp = Time(clock_type=ClockType.ROS_TIME).to_msg()
         self.ball_map.header.frame_id = self.map_frame
         self.ball_teammate = PointStamped()
@@ -80,10 +77,6 @@ class WorldModelCapsule:
         ).value
         self.obstacle_cost: float = self._blackboard.node.get_parameter("body.obstacle_cost").value
 
-        self.localization_precision_threshold: Dict[str, float] = get_parameter_dict(
-            self._blackboard.node, "body.localization_precision_threshold"
-        )
-
         # Publisher for visualization in RViZ
         self.ball_publisher = self._blackboard.node.create_publisher(PointStamped, "debug/viz_ball", 1)
         self.ball_twist_publisher = self._blackboard.node.create_publisher(TwistStamped, "debug/ball_twist", 1)
@@ -103,9 +96,7 @@ class WorldModelCapsule:
         Returns the time at which the ball was last seen if it is in the threshold or
         the more recent ball from either the teammate or itself if teamcom is available
         """
-        if not self.ball_seen_self() and (
-            hasattr(self._blackboard, "team_data") and self.localization_precision_in_threshold()
-        ):
+        if not self.ball_seen_self() and  hasattr(self._blackboard, "team_data"):
             return max(self.ball_seen_time, self._blackboard.team_data.get_teammate_ball_seen_time())
         else:
             return self.ball_seen_time
@@ -128,45 +119,34 @@ class WorldModelCapsule:
         Returns the best ball, either its own ball has been in the ball_lost_lost time
         or from teammate if the robot itself has lost it and teamcom is available
         """
-        if self.localization_precision_in_threshold():
-            if self.ball_seen_self() or not hasattr(self._blackboard, "team_data"):
-                self.used_ball_pub.publish(self.ball_map)
+        if self.ball_seen_self() or not hasattr(self._blackboard, "team_data"):
+            self.used_ball_pub.publish(self.ball_map)
+            h = Header()
+            h.stamp = self.ball_map.header.stamp
+            h.frame_id = "own_ball_map"
+            self.which_ball_pub.publish(h)
+            return self.ball_map
+        else:
+            teammate_ball = self._blackboard.team_data.get_teammate_ball()
+            if teammate_ball is not None and self._blackboard.tf_buffer.can_transform(self.base_footprint_frame,
+                                                                            teammate_ball.header.frame_id,
+                                                                            teammate_ball.header.stamp,
+                                                                            timeout=Duration(seconds=0.2)):
+                self.used_ball_pub.publish(teammate_ball)
+                h = Header()
+                h.stamp = teammate_ball.header.stamp
+                h.frame_id = "teammate_ball"
+                self.which_ball_pub.publish(h)
+                return teammate_ball
+            else:
+                self._blackboard.node.get_logger().warning(
+                    "our ball is bad but the teammates ball is worse or cant be transformed")
                 h = Header()
                 h.stamp = self.ball_map.header.stamp
                 h.frame_id = "own_ball_map"
                 self.which_ball_pub.publish(h)
+                self.used_ball_pub.publish(self.ball_map)
                 return self.ball_map
-            else:
-                teammate_ball = self._blackboard.team_data.get_teammate_ball()
-                if teammate_ball is not None and self._blackboard.tf_buffer.can_transform(
-                    self.base_footprint_frame,
-                    teammate_ball.header.frame_id,
-                    teammate_ball.header.stamp,
-                    timeout=Duration(seconds=0.2),
-                ):
-                    self.used_ball_pub.publish(teammate_ball)
-                    h = Header()
-                    h.stamp = teammate_ball.header.stamp
-                    h.frame_id = "teammate_ball"
-                    self.which_ball_pub.publish(h)
-                    return teammate_ball
-                else:
-                    self._blackboard.node.get_logger().warning(
-                        "our ball is bad but the teammates ball is worse or cant be transformed"
-                    )
-                    h = Header()
-                    h.stamp = self.ball_map.header.stamp
-                    h.frame_id = "own_ball_map"
-                    self.which_ball_pub.publish(h)
-                    self.used_ball_pub.publish(self.ball_map)
-                    return self.ball_map
-        else:
-            h = Header()
-            h.stamp = self.ball_odom.header.stamp
-            h.frame_id = "own_ball_odom"
-            self.which_ball_pub.publish(h)
-            self.used_ball_pub.publish(self.ball_odom)
-            return self.ball_odom
 
     def get_ball_position_uv(self) -> Tuple[float, float]:
         ball = self.get_best_ball_point_stamped()
@@ -213,16 +193,10 @@ class WorldModelCapsule:
         ball_buffer = PointStamped(header=msg.header, point=msg.pose.pose.position)
         try:
             self.ball = self._blackboard.tf_buffer.transform(
-                ball_buffer, self.base_footprint_frame, timeout=Duration(seconds=1.0)
-            )
-            self.ball_odom = self._blackboard.tf_buffer.transform(
-                ball_buffer, self.odom_frame, timeout=Duration(seconds=1.0)
-            )
+                  ball_buffer, self.base_footprint_frame, timeout=Duration(seconds=1.0))
             self.ball_map = self._blackboard.tf_buffer.transform(
-                ball_buffer, self.map_frame, timeout=Duration(seconds=1.0)
-            )
+                  ball_buffer, self.map_frame, timeout=Duration(seconds=1.0))
             # Set timestamps to zero to get the newest transform when this is transformed later
-            self.ball_odom.header.stamp = Time(clock_type=ClockType.ROS_TIME).to_msg()
             self.ball_map.header.stamp = Time(clock_type=ClockType.ROS_TIME).to_msg()
             self.ball_seen_time = Time.from_msg(msg.header.stamp)
             self.ball_publisher.publish(self.ball)
@@ -383,43 +357,6 @@ class WorldModelCapsule:
             self._blackboard.node.get_logger().warn(str(e))
             return None
 
-    def get_localization_precision(self) -> Tuple[float, float, float]:
-        """
-        Returns the current localization precision based on the covariance matrix.
-        """
-        x_sdev = self.pose.pose.covariance[0]  # position 0,0 in a 6x6-matrix
-        y_sdev = self.pose.pose.covariance[7]  # position 1,1 in a 6x6-matrix
-        theta_sdev = self.pose.pose.covariance[35]  # position 5,5 in a 6x6-matrix
-        return (x_sdev, y_sdev, theta_sdev)
-
-    def localization_precision_in_threshold(self) -> bool:
-        """
-        Returns whether the last localization precision values were in the threshold defined in the settings.
-        """
-        # Check whether we can transform into and from the map frame seconds.
-        if not self.localization_pose_current():
-            return False
-        # get the standard deviation values of the covariance matrix
-        precision = self.get_localization_precision()
-        # return whether those values are in the threshold
-        return (
-            precision[0] < self.localization_precision_threshold["x_sdev"]
-            and precision[1] < self.localization_precision_threshold["y_sdev"]
-            and precision[2] < self.localization_precision_threshold["theta_sdev"]
-        )
-
-    def localization_pose_current(self) -> bool:
-        """
-        Returns whether we can transform into and from the map frame.
-        """
-        # if we can do this, we should be able to transform the ball
-        # (unless the localization died during the last 1.0 seconds)
-        try:
-            t = self._blackboard.node.get_clock().now() - Duration(seconds=1.0)
-        except ValueError as e:
-            self._blackboard.node.get_logger().error(str(e))
-            t = Time(clock_type=ClockType.ROS_TIME)
-        return self._blackboard.tf_buffer.can_transform(self.base_footprint_frame, self.map_frame, t)
 
     ##########
     # Common #

@@ -97,11 +97,8 @@ class PathfindingCapsule:
         """
         # only send new request if previous request is finished or first update
         # also verify that the ball and the localization are reasonably recent/accurate
-        if (
-            self._blackboard.world_model.ball_has_been_seen()
-            and self._blackboard.world_model.localization_precision_in_threshold()
-        ):
-            ball_target = self.get_ball_goal(BallGoalType.MAP, self._blackboard.config["ball_approach_dist"])
+        if self._blackboard.world_model.ball_has_been_seen():
+            ball_target = self.get_ball_goal(BallGoalType.MAP, self._blackboard.config['ball_approach_dist'])
             own_position = self._blackboard.world_model.get_current_position_pose_stamped()
             self._blackboard.team_data.own_time_to_ball = self.time_from_pose_to_pose(own_position, ball_target)
         else:

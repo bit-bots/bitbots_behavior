@@ -114,7 +114,6 @@ class BodyDSD:
                 blackboard.pathfinding.calculate_time_to_ball()
         except Exception as e:
             import traceback
-
             traceback.print_exc()
             self.node.get_logger().error(str(e))
 
